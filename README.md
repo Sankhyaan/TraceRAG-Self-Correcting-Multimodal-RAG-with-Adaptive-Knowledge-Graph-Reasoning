@@ -1,6 +1,18 @@
 # TraceRAG — Self-Correcting Multimodal RAG with Adaptive Knowledge Graph Reasoning
 
+<p align="left">
+  <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white" />
+  <img src="https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" />
+  <img src="https://img.shields.io/badge/Google_Gemini_2.5-8E75C2?style=for-the-badge&logo=google&logoColor=white" />
+  <img src="https://img.shields.io/badge/Qdrant_Vector_DB-DC2626?style=for-the-badge&logo=qdrant&logoColor=white" />
+  <img src="https://img.shields.io/badge/Supabase_Postgres-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" />
+  <img src="https://img.shields.io/badge/NetworkX_Graph-4B8BBE?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" />
+</p>
+
 > **TraceRAG** is a production-grade multimodal RAG framework designed to minimize hallucinations across documents, OCR schematics, and timestamped audio/video. It combines hybrid dense-lexical retrieval and multi-hop Knowledge Graph reasoning with an autonomous reflection critic that detects ungrounded claims, triggers re-retrieval, and provides verifiable, interactive citations.
+
 
 ---
 
@@ -166,11 +178,11 @@ TraceRAG provides an inspectable, 4-tab unified workspace designed for multimoda
 
 ### 1. 📁 **Files & Multimodal Ingest (`Files & Ingest` Tab)**
 * **Pre-Seeded Demo Dataset**: Loads with 5 multimodal files covering the **VoltBus Route 101** engineering incident:
-  * 📄 `VoltBus_Master_Operations_Engineering_Brief_Clean.pdf` *(Operations manuals & tolerances)*
-  * 🖼️ `voltbus_v3_schematic.png` *(Hardware wiring schematics & pinout layouts)*
-  * 🖼️ `thermal_safety_flowchart.png` *(Logic flowcharts & emergency bypass conditions)*
-  * 🖼️ `route101_network_map.png` *(Route geographical network topologies)*
-  * 🎵 `voltbus_route101_debrief.mp3` *(Recorded engineer debrief audio with timestamps)*
+  * ![Document](https://img.shields.io/badge/%F0%9F%93%84_PDF-0284C7?style=flat-square) `VoltBus_Master_Operations_Engineering_Brief_Clean.pdf` *(Operations manuals & tolerances)*
+  * ![Vision OCR](https://img.shields.io/badge/%F0%9F%96%BC%EF%B8%8F_Vision_OCR-EAB308?style=flat-square) `voltbus_v3_schematic.png` *(Hardware wiring schematics & pinout layouts)*
+  * ![Vision OCR](https://img.shields.io/badge/%F0%9F%96%BC%EF%B8%8F_Vision_OCR-EAB308?style=flat-square) `thermal_safety_flowchart.png` *(Logic flowcharts & emergency bypass conditions)*
+  * ![Vision OCR](https://img.shields.io/badge/%F0%9F%96%BC%EF%B8%8F_Vision_OCR-EAB308?style=flat-square) `route101_network_map.png` *(Route geographical network topologies)*
+  * ![Audio](https://img.shields.io/badge/%F0%9F%8E%B5_Whisper_Audio-F97316?style=flat-square) `voltbus_route101_debrief.mp3` *(Recorded engineer debrief audio with timestamps)*
 * **Universal Upload**: Drag & drop custom PDFs, Word (`.docx`), TXT, PNG/JPG images, or MP3/WAV/MP4 audio/video files.
 * **In-App File Viewer**: Click **`VIEW ↗`** on any card to launch the modal with zoomable OCR visuals, extracted text views, and audio playback.
 
@@ -179,7 +191,15 @@ TraceRAG provides an inspectable, 4-tab unified workspace designed for multimoda
 ### 2. 💬 **AI Chat & Grounded Synthesis (`Chat & Synthesis` Tab)**
 * **Ask Questions**: Query across your ingested files (e.g., *"What safety thresholds caused the throttling on Route 101?"*).
 * **Live 5-Stage Pipeline Badge Stream**:
-  > `1. Intent & Routing` ➔ `2. Hybrid Retrieval` ➔ `3. Graph Multi-Hop` ➔ `4. Critic Grading` ➔ `5. Cited Synthesis`
+
+<p align="left">
+  <img src="https://img.shields.io/badge/1._Intent_%26_Routing-3B82F6?style=flat-square&logo=compass&logoColor=white" /> ➔
+  <img src="https://img.shields.io/badge/2._Hybrid_Retrieval-06B6D4?style=flat-square&logo=search&logoColor=white" /> ➔
+  <img src="https://img.shields.io/badge/3._Graph_Multi--Hop-8B5CF6?style=flat-square&logo=graphql&logoColor=white" /> ➔
+  <img src="https://img.shields.io/badge/4._Critic_Grading-EC4899?style=flat-square&logo=shield&logoColor=white" /> ➔
+  <img src="https://img.shields.io/badge/5._Cited_Synthesis-10B981?style=flat-square&logo=sparkles&logoColor=white" />
+</p>
+
 * **Verifiable Inline Citations**: Click any citation badge (`[Doc 1: Page 4]`, `[Img 2: Schematic]`, `[Aud 1: 02:18]`) to view exact source context or jump to the audio second offset.
 * **Critic Hallucination Grading**: Expand the Critic badge above any response to inspect the atomic claim verification matrix, factual groundedness score, and auto-correction retries.
 
@@ -187,23 +207,27 @@ TraceRAG provides an inspectable, 4-tab unified workspace designed for multimoda
 
 ### 3. 🔍 **Router & Retrieval Inspector (`Retrieval Inspector` Tab)**
 * **Real-Time Score Breakdown**: Inspect exact mathematical score balances:
-  * **Dense Vector Similarity** (Qdrant semantic vector space)
-  * **BM25 Lexical Score** (Exact term frequency & keyword matching)
-  * **LLM Modality Routing Weights** (Document, Image OCR, Audio transcript, Video frames)
-* **Chunk Tier Ratings**: Highlights chunks classified as `HIGH ●`, `MEDIUM ◑`, or `LOW ○` relevance.
+  * ![Dense](https://img.shields.io/badge/Dense_Vector_Cosine-3B82F6?style=flat-square) (Qdrant semantic vector space)
+  * ![BM25](https://img.shields.io/badge/BM25_Lexical_Score-06B6D4?style=flat-square) (Exact term frequency & keyword matching)
+  * ![Modality](https://img.shields.io/badge/LLM_Modality_Routing-8B5CF6?style=flat-square) (Document, Image OCR, Audio transcript, Video frames)
+* **Chunk Tier Ratings**: Highlights chunks classified as:
+  * ![HIGH](https://img.shields.io/badge/HIGH_%E2%97%8F-10B981?style=flat-square) *High Semantic & Keyword Relevance*
+  * ![MEDIUM](https://img.shields.io/badge/MEDIUM_%E2%97%91-F59E0B?style=flat-square) *Moderate Contextual Overlap*
+  * ![LOW](https://img.shields.io/badge/LOW_%E2%97%8B-EF4444?style=flat-square) *Filtered Noise / Low Weight*
 
 ---
 
 ### 4. 🕸️ **Adaptive Knowledge Graph (`Knowledge Graph` Tab)**
 * **Interactive 2D Physics Canvas**: Explore a NetworkX force-directed graph with **199+ nodes and 178+ cross-file relationships**.
 * **Entity Neighborhoods**: Click any entity node to inspect its connected relations, source files, and evidence snippets.
-* **Multi-Hop Path Tracer**: Select any **Entity A** and **Entity B** to compute and visualize the shortest reasoning chain (`Entity A ➔ Relay Node ➔ Entity B`) connecting disparate files.
+* **Multi-Hop Path Tracer**: Select any **Entity A** and **Entity B** to compute and visualize the shortest reasoning chain:
+  > ![Start](https://img.shields.io/badge/Entity_A-3B82F6?style=flat-square) ➔ ![Relay](https://img.shields.io/badge/Multi--Hop_Relay_Node-8B5CF6?style=flat-square) ➔ ![Target](https://img.shields.io/badge/Entity_B-10B981?style=flat-square)
 
 ---
 
 ### 5. 🔒 **Workspaces & Guest Mode**
-* **Guest Mode**: Zero-setup exploration using the pre-loaded canonical VoltBus workspace.
-* **Authenticated Mode**: Click **`✨ Sign In / Sign Up`** to create private, isolated conversation sessions with persistent Supabase storage and independent Knowledge Graphs.
+* ![Guest](https://img.shields.io/badge/Guest_Mode-64748B?style=flat-square) **Zero-setup exploration** using the pre-loaded canonical VoltBus workspace.
+* ![Auth](https://img.shields.io/badge/Authenticated_Mode-6366F1?style=flat-square) Click **`✨ Sign In / Sign Up`** to create private, isolated conversation sessions with persistent Supabase storage and independent Knowledge Graphs.
 
 ---
 
