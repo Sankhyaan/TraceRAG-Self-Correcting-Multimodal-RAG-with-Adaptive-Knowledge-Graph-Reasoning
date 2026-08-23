@@ -179,7 +179,7 @@ TraceRAG provides an inspectable, 4-tab unified workspace designed for multimoda
 ### 2. 💬 **AI Chat & Grounded Synthesis (`Chat & Synthesis` Tab)**
 * **Ask Questions**: Query across your ingested files (e.g., *"What safety thresholds caused the throttling on Route 101?"*).
 * **Live 5-Stage Pipeline Badge Stream**:
-  $$\text{1. Intent \& Routing} \longrightarrow \text{2. Hybrid Retrieval} \longrightarrow \text{3. Graph Multi-Hop} \longrightarrow \text{4. Critic Grading} \longrightarrow \text{5. Cited Synthesis}$$
+  > `1. Intent & Routing` ➔ `2. Hybrid Retrieval` ➔ `3. Graph Multi-Hop` ➔ `4. Critic Grading` ➔ `5. Cited Synthesis`
 * **Verifiable Inline Citations**: Click any citation badge (`[Doc 1: Page 4]`, `[Img 2: Schematic]`, `[Aud 1: 02:18]`) to view exact source context or jump to the audio second offset.
 * **Critic Hallucination Grading**: Expand the Critic badge above any response to inspect the atomic claim verification matrix, factual groundedness score, and auto-correction retries.
 
@@ -197,7 +197,7 @@ TraceRAG provides an inspectable, 4-tab unified workspace designed for multimoda
 ### 4. 🕸️ **Adaptive Knowledge Graph (`Knowledge Graph` Tab)**
 * **Interactive 2D Physics Canvas**: Explore a NetworkX force-directed graph with **199+ nodes and 178+ cross-file relationships**.
 * **Entity Neighborhoods**: Click any entity node to inspect its connected relations, source files, and evidence snippets.
-* **Multi-Hop Path Tracer**: Select any **Entity A** and **Entity B** to compute and visualize the shortest reasoning chain ($E_A \xrightarrow{r_1} E_1 \xrightarrow{r_2} E_B$) connecting disparate files.
+* **Multi-Hop Path Tracer**: Select any **Entity A** and **Entity B** to compute and visualize the shortest reasoning chain (`Entity A ➔ Relay Node ➔ Entity B`) connecting disparate files.
 
 ---
 
