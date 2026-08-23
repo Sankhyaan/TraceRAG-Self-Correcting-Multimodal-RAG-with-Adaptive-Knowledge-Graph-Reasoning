@@ -5,7 +5,7 @@ import { RetrievalTester } from './components/RetrievalTester'
 import { KnowledgeGraphViewer } from './components/KnowledgeGraphViewer'
 import { ChatSynthesisView } from './components/ChatSynthesisView'
 import { AuthGate } from './components/AuthGate'
-import { listConversations } from './api/conversationsApi'
+import { listConversations, invalidateConversationsCache } from './api/conversationsApi'
 
 import { type AuthUser, signOut as authSignOut, getCurrentUser, onAuthStateChange } from './api/authApi'
 
@@ -26,14 +26,23 @@ export default function App() {
   useEffect(() => {
     getCurrentUser().then((u) => {
       setUser(u)
+      if (!u) {
+        invalidateConversationsCache()
+        setConversationId('conv_demo')
+      }
       setAuthLoading(false)
     })
     const unsub = onAuthStateChange((u) => {
       setUser(u)
+      if (!u) {
+        invalidateConversationsCache()
+        setConversationId('conv_demo')
+      }
       setAuthLoading(false)
     })
     return unsub
   }, [])
+
 
   // Load conversations based on auth state
   useEffect(() => {
@@ -169,8 +178,10 @@ export default function App() {
   }
 
   const handleSignOut = async () => {
-    await authSignOut()
+    invalidateConversationsCache()
+    setConversationId('conv_demo')
     setUser(null)
+    await authSignOut()
   }
 
   // Show full-page loader while restoring session on initial load

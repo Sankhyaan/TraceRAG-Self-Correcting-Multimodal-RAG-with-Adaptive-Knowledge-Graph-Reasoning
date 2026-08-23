@@ -43,7 +43,11 @@ export function setCachedConversations(list: Conversation[]) {
 export function invalidateConversationsCache() {
   _convsCache = null
   _convsCacheExpiry = 0
+  for (const k in _msgsCache) {
+    delete _msgsCache[k]
+  }
 }
+
 
 export async function listConversations(): Promise<Conversation[]> {
   const res = await apiFetch(`${API_BASE}/conversations`)

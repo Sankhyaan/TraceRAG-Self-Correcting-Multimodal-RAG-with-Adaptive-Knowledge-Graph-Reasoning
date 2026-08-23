@@ -38,11 +38,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   }
 
+  const DEMO_CONV: Conversation = {
+    id: 'conv_demo',
+    title: 'VoltBus Engineering & Route 101 Operations',
+    file_count: 5,
+    message_count: 5,
+    is_demo: true,
+  }
+
   useEffect(() => {
+    if (isGuest) {
+      setConversations([DEMO_CONV])
+      return
+    }
     fetchConversations()
 
     // Listen to global file change events for instant file count badge updates
     const handleGlobalFileChange = (e: any) => {
+      if (isGuest) return
       if (e.detail?.conversationId && typeof e.detail.count === 'number') {
         const targetId = e.detail.conversationId
         const count = e.detail.count
@@ -57,7 +70,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
     window.addEventListener('trace_files_changed', handleGlobalFileChange)
     return () => window.removeEventListener('trace_files_changed', handleGlobalFileChange)
-  }, [activeId, refreshSignal])
+  }, [isGuest, activeId, refreshSignal])
+
 
   useEffect(() => {
     if (fileCountOverride && Object.keys(fileCountOverride).length > 0) {
@@ -252,12 +266,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           {(() => {
-            const displayList =
-              conversations.length > 0
-                ? conversations
-                : activeId
-                ? [{ id: activeId, title: 'New Conversation', file_count: 0, message_count: 0 }]
-                : []
+            const displayList = isGuest
+              ? [DEMO_CONV]
+              : conversations.length > 0
+              ? conversations
+              : activeId
+              ? [{ id: activeId, title: 'New Conversation', file_count: 0, message_count: 0 }]
+              : []
 
             if (displayList.length === 0) {
               return (
