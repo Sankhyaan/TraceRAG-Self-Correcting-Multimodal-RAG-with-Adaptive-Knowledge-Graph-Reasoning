@@ -1,6 +1,6 @@
 import { getAccessToken } from './authApi'
 
-const _RAW_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const _RAW_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '')
 export const API_BASE = `${_RAW_BASE}/api`
 
 /**

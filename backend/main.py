@@ -27,12 +27,11 @@ app = FastAPI(
     version="0.8.0",
 )
 
-# ── CORS ─────────────────────────────────────────────────────────────────────
-# In production, restrict to the exact frontend origin.
-# In dev (no FRONTEND_URL set), allow both localhost ports.
 _allowed_origins: list[str] = [
     "http://localhost:3000",
     "http://localhost:5173",
+    "https://trace-rag.vercel.app",
+    "https://trace-rag-self-correcting-multimoda.vercel.app",
 ]
 if settings.frontend_url and settings.frontend_url not in _allowed_origins:
     _allowed_origins.append(settings.frontend_url)
@@ -40,10 +39,12 @@ if settings.frontend_url and settings.frontend_url not in _allowed_origins:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app|http://localhost:\d+",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 
 # ── Request / Response Logging Middleware ─────────────────────────────────────
