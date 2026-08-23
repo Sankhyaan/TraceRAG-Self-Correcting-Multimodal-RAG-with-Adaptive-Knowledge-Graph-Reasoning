@@ -95,13 +95,13 @@ export default function App() {
   const getTabDescription = () => {
     switch (activeTab) {
       case 'chat':
-        return `Ask questions with strict [n] passage citations, Critic confidence grading, and claim verification.`
+        return 'Grounded multi-file synthesis with verifiable citations.'
       case 'files':
-        return `Files scoped to ${conversationId} are automatically transcribed, OCR-extracted, and indexed.`
+        return 'Multimodal assets scoped to this active session.'
       case 'retrieval':
-        return `Query Qdrant Cloud dense vectors and BM25 keywords with LLM modality routing.`
+        return 'Hybrid dense vectors and BM25 lexical inspector.'
       case 'graph':
-        return `Explore entity networks, cross-file relationships, and multi-hop reasoning paths.`
+        return 'Entity network topology and multi-hop reasoning paths.'
     }
   }
 
