@@ -1,7 +1,7 @@
 # TraceRAG — Self-Correcting Multimodal RAG with Adaptive Knowledge Graph Reasoning
 
 <p align="center">
-  <a href="https://trace-rag-self-correcting-multimoda.vercel.app"><img src="https://img.shields.io/badge/🚀_Live_Web_App-trace--rag.vercel.app-3B82F6?style=for-the-badge&logo=vercel&logoColor=white" /></a>
+  <a href="https://trace-rag.vercel.app"><img src="https://img.shields.io/badge/🚀_Live_Web_App-trace--rag.vercel.app-3B82F6?style=for-the-badge&logo=vercel&logoColor=white" /></a>
   <a href="https://web-production-c261eb.up.railway.app/docs"><img src="https://img.shields.io/badge/📖_API_Documentation-Swagger_UI-005571?style=for-the-badge&logo=fastapi&logoColor=white" /></a>
   <a href="https://web-production-c261eb.up.railway.app/health"><img src="https://img.shields.io/badge/⚡_Backend_Status-Healthy-10B981?style=for-the-badge&logo=statuspage&logoColor=white" /></a>
 </p>
@@ -17,7 +17,7 @@
   <img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" />
 </p>
 
-> 🌐 **Live Web Application**: [https://trace-rag-self-correcting-multimoda.vercel.app](https://trace-rag-self-correcting-multimoda.vercel.app)  
+> 🌐 **Live Web Application**: [https://trace-rag.vercel.app](https://trace-rag.vercel.app)  
 > 🔗 **Interactive API Documentation**: [https://web-production-c261eb.up.railway.app/docs](https://web-production-c261eb.up.railway.app/docs)  
 > ⚡ **Demo Dataset**: Pre-loaded with canonical VoltBus Route 101 Multimodal Dataset (PDF, MP3, 3 Schematics)  
 >  
