@@ -1,17 +1,28 @@
 # TraceRAG — Self-Correcting Multimodal RAG with Adaptive Knowledge Graph Reasoning
 
-<p align="left">
-  <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white" />
-  <img src="https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" />
-  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" />
-  <img src="https://img.shields.io/badge/Google_Gemini_2.5-8E75C2?style=for-the-badge&logo=google&logoColor=white" />
-  <img src="https://img.shields.io/badge/Qdrant_Vector_DB-DC2626?style=for-the-badge&logo=qdrant&logoColor=white" />
-  <img src="https://img.shields.io/badge/Supabase_Postgres-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" />
-  <img src="https://img.shields.io/badge/NetworkX_Graph-4B8BBE?style=for-the-badge&logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" />
+<p align="center">
+  <a href="https://trace-rag.vercel.app"><img src="https://img.shields.io/badge/🚀_Live_Web_App-Visit_TraceRAG-3B82F6?style=for-the-badge&logo=vercel&logoColor=white" /></a>
+  <a href="https://trace-rag-backend.up.railway.app/docs"><img src="https://img.shields.io/badge/📖_API_Documentation-Swagger_UI-005571?style=for-the-badge&logo=fastapi&logoColor=white" /></a>
+  <a href="https://trace-rag-backend.up.railway.app/health"><img src="https://img.shields.io/badge/⚡_Backend_Status-Healthy-10B981?style=for-the-badge&logo=statuspage&logoColor=white" /></a>
 </p>
 
+<p align="center">
+  <img src="https://img.shields.io/badge/FastAPI-005571?style=flat-square&logo=fastapi&logoColor=white" />
+  <img src="https://img.shields.io/badge/React_18-20232A?style=flat-square&logo=react&logoColor=61DAFB" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white" />
+  <img src="https://img.shields.io/badge/Google_Gemini_2.5-8E75C2?style=flat-square&logo=google&logoColor=white" />
+  <img src="https://img.shields.io/badge/Qdrant_Vector_DB-DC2626?style=flat-square&logo=qdrant&logoColor=white" />
+  <img src="https://img.shields.io/badge/Supabase_Postgres-3ECF8E?style=flat-square&logo=supabase&logoColor=white" />
+  <img src="https://img.shields.io/badge/NetworkX_Graph-4B8BBE?style=flat-square&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" />
+</p>
+
+> 🌐 **Live Web Application**: [https://trace-rag.vercel.app](https://trace-rag.vercel.app)  
+> 🔗 **Interactive API Documentation**: [https://trace-rag-backend.up.railway.app/docs](https://trace-rag-backend.up.railway.app/docs)  
+> ⚡ **Demo Dataset**: Pre-loaded with canonical VoltBus Route 101 Multimodal Dataset (PDF, MP3, 3 Schematics)  
+>  
 > **TraceRAG** is a production-grade multimodal RAG framework designed to minimize hallucinations across documents, OCR schematics, and timestamped audio/video. It combines hybrid dense-lexical retrieval and multi-hop Knowledge Graph reasoning with an autonomous reflection critic that detects ungrounded claims, triggers re-retrieval, and provides verifiable, interactive citations.
+
 
 
 ---
