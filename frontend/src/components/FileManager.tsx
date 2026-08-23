@@ -737,7 +737,7 @@ export const FileManager: React.FC<FileManagerProps> = ({
                       {statusBadge}
                     </div>
 
-                    {!isGuest && (
+                    {!isGuest && conversationId !== 'conv_demo' && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation()

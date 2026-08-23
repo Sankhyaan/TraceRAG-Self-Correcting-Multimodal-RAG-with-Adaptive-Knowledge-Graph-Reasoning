@@ -575,6 +575,7 @@ export default function App() {
           <div style={{ display: activeTab === 'files' ? 'flex' : 'none', flexDirection: 'column', flex: 1, minHeight: 0 }}>
             <FileManager
               conversationId={conversationId}
+              isGuest={!user}
               onFilesChanged={() => setFilesChangeSignal((prev) => prev + 1)}
               onFileCountChange={(count) =>
                 setFileCounts((prev) => ({ ...prev, [conversationId]: count }))
