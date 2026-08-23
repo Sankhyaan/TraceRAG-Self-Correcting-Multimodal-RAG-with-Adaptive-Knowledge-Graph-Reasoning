@@ -158,57 +158,88 @@ Open **http://localhost:3000** → Sign up → Start uploading files.
 
 ---
 
-## 🚀 Deployment
+---
 
-### Backend → Railway
+## 🗺️ Interactive App Tour & Navigation Guide
 
-1. Push your repo to GitHub.
-2. Go to [railway.app](https://railway.app) → **New Project → Deploy from GitHub repo**.
-3. Railway auto-detects `railway.json` and `Procfile`.
-4. Set environment variables in Railway **Variables** tab (all values from your `.env`).
-5. Set `FRONTEND_URL` to your Vercel URL (after frontend deploy).
-6. Note your Railway URL (e.g., `https://trace-rag-backend.up.railway.app`).
+TraceRAG provides an inspectable, 4-tab unified workspace designed for multimodal analysis and self-correcting RAG exploration.
 
-### Frontend → Vercel
-
-1. Go to [vercel.com](https://vercel.com) → **New Project → Import from GitHub**.
-2. Set **Root Directory** to `frontend`.
-3. Set environment variables:
-   - `VITE_API_URL` → Your Railway backend URL
-   - `VITE_SUPABASE_URL` → Your Supabase URL
-   - `VITE_SUPABASE_ANON_KEY` → Your Supabase anon key
-4. Deploy.
-
-### Post-Deploy Checklist
-
-- [ ] `https://your-backend.up.railway.app/health` returns `{"status": "healthy"}`
-- [ ] Set `FRONTEND_URL` in Railway to your Vercel URL and redeploy backend
-- [ ] Set `SUPABASE_JWT_SECRET` in Railway → auth becomes fully enforced
-- [ ] Sign up and verify you can upload files, query, and see the Knowledge Graph
+### 1. 📁 **Files & Multimodal Ingest (`Files & Ingest` Tab)**
+* **Pre-Seeded Demo Dataset**: Loads with 5 multimodal files covering the **VoltBus Route 101** engineering incident:
+  * 📄 `VoltBus_Master_Operations_Engineering_Brief_Clean.pdf` *(Operations manuals & tolerances)*
+  * 🖼️ `voltbus_v3_schematic.png` *(Hardware wiring schematics & pinout layouts)*
+  * 🖼️ `thermal_safety_flowchart.png` *(Logic flowcharts & emergency bypass conditions)*
+  * 🖼️ `route101_network_map.png` *(Route geographical network topologies)*
+  * 🎵 `voltbus_route101_debrief.mp3` *(Recorded engineer debrief audio with timestamps)*
+* **Universal Upload**: Drag & drop custom PDFs, Word (`.docx`), TXT, PNG/JPG images, or MP3/WAV/MP4 audio/video files.
+* **In-App File Viewer**: Click **`VIEW ↗`** on any card to launch the modal with zoomable OCR visuals, extracted text views, and audio playback.
 
 ---
 
-## 🛡️ Security Notes
+### 2. 💬 **AI Chat & Grounded Synthesis (`Chat & Synthesis` Tab)**
+* **Ask Questions**: Query across your ingested files (e.g., *"What safety thresholds caused the throttling on Route 101?"*).
+* **Live 5-Stage Pipeline Badge Stream**:
+  $$\text{1. Intent \& Routing} \longrightarrow \text{2. Hybrid Retrieval} \longrightarrow \text{3. Graph Multi-Hop} \longrightarrow \text{4. Critic Grading} \longrightarrow \text{5. Cited Synthesis}$$
+* **Verifiable Inline Citations**: Click any citation badge (`[Doc 1: Page 4]`, `[Img 2: Schematic]`, `[Aud 1: 02:18]`) to view exact source context or jump to the audio second offset.
+* **Critic Hallucination Grading**: Expand the Critic badge above any response to inspect the atomic claim verification matrix, factual groundedness score, and auto-correction retries.
 
-- The backend uses the **service role key** (bypasses RLS) for all DB operations — keep it secret.
-- RLS policies ensure users can only access their own data **via the Supabase anon client** (frontend auth).
-- Setting `SUPABASE_JWT_SECRET` enables backend JWT verification — without it, all routes are open (fine for local dev).
-- Never commit `.env` to source control.
+---
+
+### 3. 🔍 **Router & Retrieval Inspector (`Retrieval Inspector` Tab)**
+* **Real-Time Score Breakdown**: Inspect exact mathematical score balances:
+  * **Dense Vector Similarity** (Qdrant semantic vector space)
+  * **BM25 Lexical Score** (Exact term frequency & keyword matching)
+  * **LLM Modality Routing Weights** (Document, Image OCR, Audio transcript, Video frames)
+* **Chunk Tier Ratings**: Highlights chunks classified as `HIGH ●`, `MEDIUM ◑`, or `LOW ○` relevance.
+
+---
+
+### 4. 🕸️ **Adaptive Knowledge Graph (`Knowledge Graph` Tab)**
+* **Interactive 2D Physics Canvas**: Explore a NetworkX force-directed graph with **199+ nodes and 178+ cross-file relationships**.
+* **Entity Neighborhoods**: Click any entity node to inspect its connected relations, source files, and evidence snippets.
+* **Multi-Hop Path Tracer**: Select any **Entity A** and **Entity B** to compute and visualize the shortest reasoning chain ($E_A \xrightarrow{r_1} E_1 \xrightarrow{r_2} E_B$) connecting disparate files.
+
+---
+
+### 5. 🔒 **Workspaces & Guest Mode**
+* **Guest Mode**: Zero-setup exploration using the pre-loaded canonical VoltBus workspace.
+* **Authenticated Mode**: Click **`✨ Sign In / Sign Up`** to create private, isolated conversation sessions with persistent Supabase storage and independent Knowledge Graphs.
+
+---
+
+## 🚀 Live Deployment & Cloud Architecture
+
+TraceRAG is fully configured for continuous deployment:
+
+| Component | Platform | Configuration |
+|---|---|---|
+| **Frontend Web App** | **Vercel** | SPA routing via `frontend/vercel.json`, auto-deployed from `main` |
+| **Backend API Engine** | **Railway** | FastAPI containerized with `railway.json` + `Procfile` |
+| **Database & Auth** | **Supabase** | Postgres database with Row-Level Security (RLS) & S3-compatible file storage |
+| **Vector Index** | **Qdrant** | High-dimensional HNSW cosine vector index |
+
+### Quick API Health Check:
+```bash
+# Verify backend deployment health
+curl https://your-backend.up.railway.app/health
+# Returns: {"status": "healthy", "version": "0.8.0", "llm_provider": "gemini"}
+```
 
 ---
 
 ## 📊 API Reference
 
-Interactive docs available at `/docs` when the backend is running.
+Interactive OpenAPI documentation is available at `/docs` on the running backend:
 
 | Endpoint | Method | Description |
 |---|---|---|
-| `/health` | GET | Service status and config check |
-| `/api/files/upload` | POST | Upload files (multipart/form-data) |
-| `/api/files` | GET | List files for a conversation |
-| `/api/files/{id}` | DELETE | Delete a file |
-| `/api/conversations` | GET/POST | List or create conversations |
-| `/api/query/stream` | POST | Streaming RAG query |
-| `/api/graph/{conv_id}` | GET | Get Knowledge Graph data |
-| `/api/graph/traverse` | POST | Multi-hop graph traversal |
-| `/api/retrieval/query` | POST | Test hybrid retrieval |
+| `/health` | `GET` | Service status and LLM/Supabase configuration readiness |
+| `/api/files/upload` | `POST` | Upload and extract multimodal files (PDF, PNG, MP3, MP4) |
+| `/api/files` | `GET` | List files and extraction statuses for a conversation |
+| `/api/files/{id}` | `DELETE` | Delete a file from storage and prune graph/vector indices |
+| `/api/conversations` | `GET/POST` | List user workspaces or optimistically create new sessions |
+| `/api/query/stream` | `POST` | Server-Sent Events (SSE) streaming cited RAG generation |
+| `/api/graph/{conv_id}` | `GET` | Fetch conversation Knowledge Graph nodes, edges, and statistics |
+| `/api/graph/traverse` | `POST` | Execute multi-hop Dijkstra pathfinding between entities |
+| `/api/retrieval/query` | `POST` | Inspect hybrid dense+sparse retrieval weights and scores |
+
