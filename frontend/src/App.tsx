@@ -70,7 +70,8 @@ export default function App() {
         setConversationId('conv_demo')
         setUser(null)
       } else if (u) {
-        setUser(u)
+        // Only update user state if the identity actually changed (prevent re-renders on tab focus)
+        setUser((prev) => (prev?.id === u.id && prev?.email === u.email ? prev : u))
       }
       setAuthLoading(false)
     })
@@ -111,14 +112,6 @@ export default function App() {
         isCancelled = true
       }
     }
-
-    // Set transition screen on sign-in if not already active
-    setAuthTransition((prev) =>
-      prev ?? {
-        title: 'Signing you in...',
-        subtitle: 'Preparing your personal workspace & knowledge graphs...',
-      }
-    )
 
     // Clear stale in-memory files cache on user switch
     import('./api/filesApi').then(({ clearFilesCache }) => clearFilesCache())
