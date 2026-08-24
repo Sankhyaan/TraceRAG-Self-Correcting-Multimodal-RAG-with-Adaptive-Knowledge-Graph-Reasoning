@@ -366,11 +366,37 @@ export const FileManager: React.FC<FileManagerProps> = ({
             <h4 style={{ margin: 0, fontSize: '0.86rem', fontWeight: 700, color: '#f8fafc', letterSpacing: '-0.01em' }}>
               Multimodal Ingest Workspace & Exploration Guide
             </h4>
-            <p style={{ margin: 0, fontSize: '0.72rem', color: '#94a3b8' }}>
+            <p style={{ margin: '0.1rem 0 0 0', fontSize: '0.72rem', color: '#94a3b8' }}>
               These files are transcribed, OCR-extracted, and indexed into vectors & knowledge graphs. Explore next steps:
             </p>
           </div>
         </div>
+
+        {/* Guest Demo Mode Explanatory Notice */}
+        {isGuest && (
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%)',
+              border: '1px solid rgba(56, 189, 248, 0.22)',
+              borderRadius: '8px',
+              padding: '0.45rem 0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontSize: '0.73rem',
+              color: '#e2e8f0',
+              lineHeight: '1.4',
+            }}
+          >
+            <span style={{ fontSize: '0.95rem', flexShrink: 0 }}>💡</span>
+            <div>
+              <span style={{ fontWeight: 700, color: '#38bdf8' }}>Guest Demo Mode: </span>
+              <span>
+                You are currently in Guest Mode. You can freely explore, test queries, inspect retrieval weights, and traverse the Knowledge Graph. To upload your own custom files, create private workspaces, and save changes, please <strong>Sign In</strong>. Note that in Guest Mode, refreshing the page will reset Chat Synthesis and Retrieval Inspector back to their default demo state.
+              </span>
+            </div>
+          </div>
+        )}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.55rem' }}>
           {/* Card 1: Chat */}
