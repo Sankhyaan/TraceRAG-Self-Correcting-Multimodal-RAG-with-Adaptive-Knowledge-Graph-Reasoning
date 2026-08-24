@@ -50,27 +50,14 @@ export default function App() {
       }
       setAuthLoading(false)
     })
-    const unsub = onAuthStateChange((u) => {
-      if (u && !user) {
-        setAuthTransition({
-          title: 'Signing you in...',
-          subtitle: 'Preparing your personal workspace & knowledge graphs...',
-        })
-      } else if (!u && user) {
-        setAuthTransition({
-          title: 'Signing you out...',
-          subtitle: 'Restoring Guest Demo workspace...',
-        })
-      }
-      setUser(u)
-      if (!u) {
+    const unsub = onAuthStateChange((u, _session, event) => {
+      // Background events (TOKEN_REFRESHED, INITIAL_SESSION, tab switch) must NEVER trigger the full-screen loader
+      if (event === 'SIGNED_OUT') {
         invalidateConversationsCache()
         setConversationId('conv_demo')
-      } else {
-        const saved = localStorage.getItem(`trace_active_conversation_${u.id}`)
-        if (saved && saved !== 'conv_demo') {
-          setConversationId(saved)
-        }
+        setUser(null)
+      } else if (u) {
+        setUser(u)
       }
       setAuthLoading(false)
     })

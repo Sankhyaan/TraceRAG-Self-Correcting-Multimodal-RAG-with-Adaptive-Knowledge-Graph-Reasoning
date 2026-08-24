@@ -151,13 +151,13 @@ export async function getAccessToken(): Promise<string | null> {
   return _cachedToken
 }
 
-/** Subscribe to auth state changes (login / logout) */
+/** Subscribe to auth state changes (login / logout / token refresh) */
 export function onAuthStateChange(
-  callback: (user: AuthUser | null, session: Session | null) => void
+  callback: (user: AuthUser | null, session: Session | null, event: string) => void
 ) {
   const {
     data: { subscription },
-  } = supabase.auth.onAuthStateChange((_event, session) => {
+  } = supabase.auth.onAuthStateChange((event, session) => {
     if (session?.access_token) {
       _cachedToken = session.access_token
       _tokenExpiry = Date.now() + 55_000
@@ -167,7 +167,7 @@ export function onAuthStateChange(
     const user = session?.user
       ? { id: session.user.id, email: session.user.email ?? '' }
       : null
-    callback(user, session)
+    callback(user, session, event)
   })
   return () => subscription.unsubscribe()
 }
