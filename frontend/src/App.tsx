@@ -78,6 +78,15 @@ export default function App() {
   }, [])
 
 
+  // Safety watchdog: ensure auth transition buffer overlay is NEVER stuck rotating forever
+  useEffect(() => {
+    if (!authTransition) return
+    const watchdog = setTimeout(() => {
+      setAuthTransition(null)
+    }, 2500)
+    return () => clearTimeout(watchdog)
+  }, [authTransition])
+
   // Load conversations and preload assets based on auth state
   useEffect(() => {
     let isCancelled = false
@@ -94,11 +103,9 @@ export default function App() {
         })
         .catch((e) => console.warn('Could not load demo conversation:', e))
         .finally(() => {
-          if (!isCancelled) {
-            setTimeout(() => {
-              setAuthTransition(null)
-            }, 1000)
-          }
+          setTimeout(() => {
+            setAuthTransition(null)
+          }, 600)
         })
       return () => {
         isCancelled = true
@@ -146,11 +153,9 @@ export default function App() {
       })
       .catch((e) => console.warn('Could not list conversations on load:', e))
       .finally(() => {
-        if (!isCancelled) {
-          setTimeout(() => {
-            setAuthTransition(null)
-          }, 1000)
-        }
+        setTimeout(() => {
+          setAuthTransition(null)
+        }, 700)
       })
 
     return () => {
