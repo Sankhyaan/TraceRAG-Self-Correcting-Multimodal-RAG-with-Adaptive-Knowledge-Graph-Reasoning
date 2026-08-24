@@ -24,54 +24,30 @@ def get_conversation_graph(conversation_id: str):
     """
     cg = graph_manager.get_graph(conversation_id)
 
-    # Prune inactive files that were deleted from Supabase, or auto-seed if newly cloned
+    # Prune inactive files that were deleted from Supabase, or build graph if not yet indexed
     try:
-        import os
-        import json
         sb = get_supabase()
         res = (
             sb.table("files")
-            .select("id, filename")
+            .select("id, filename, file_type, extracted_text")
             .eq("conversation_id", conversation_id)
             .execute()
         )
         active_files = res.data or []
         active_file_ids = {row["id"] for row in active_files}
 
-        # If graph is empty but files exist (e.g. cloned workspace), load canonical demo graph
-        if cg.graph.number_of_nodes() == 0 and len(active_files) > 0:
-            src_graph = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "graphs", "conv_demo.json")
-            if not os.path.exists(src_graph):
-                src_graph = os.path.join(os.getcwd(), "data", "graphs", "conv_demo.json")
-            if os.path.exists(src_graph):
-                with open(src_graph, "r", encoding="utf-8") as f:
-                    g_data = json.load(f)
-                cg.graph.clear()
-                for node in g_data.get("nodes", []):
-                    node_id = node.get("id") or node.get("canonical_id") or node.get("name")
-                    cg.graph.add_node(
-                        node_id,
-                        name=node.get("name", node_id),
-                        canonical_id=node.get("canonical_id", node_id),
-                        type=node.get("type", "CONCEPT"),
-                        aliases=node.get("aliases", [node.get("name", node_id)]),
-                        file_ids=list(active_file_ids),
-                        metadata=node.get("metadata", {}),
+        # If graph is empty but extracted files exist in a personal workspace, build graph from real files
+        if cg.graph.number_of_nodes() == 0 and len(active_files) > 0 and conversation_id != "conv_demo":
+            for row in active_files:
+                text = row.get("extracted_text")
+                if text and text.strip():
+                    graph_manager.index_file_text(
+                        conversation_id=conversation_id,
+                        file_id=row["id"],
+                        filename=row["filename"],
+                        file_type=row.get("file_type", "document"),
+                        text=text,
                     )
-                for edge in g_data.get("edges", []):
-                    cg.graph.add_edge(
-                        edge["source"],
-                        edge["target"],
-                        key=edge.get("id"),
-                        id=edge.get("id"),
-                        relation=edge["relation"],
-                        evidence=edge.get("evidence", ""),
-                        file_id=list(active_file_ids)[0] if active_file_ids else "",
-                        filename=edge.get("filename", ""),
-                        chunk_id=edge.get("chunk_id", ""),
-                        confidence=edge.get("confidence", 0.9),
-                    )
-                cg._save_to_disk()
         elif active_file_ids:
             cg.prune_inactive_files(active_file_ids)
     except Exception as e:
