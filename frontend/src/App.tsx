@@ -7,13 +7,20 @@ import { ChatSynthesisView } from './components/ChatSynthesisView'
 import { AuthGate } from './components/AuthGate'
 import { listConversations, invalidateConversationsCache } from './api/conversationsApi'
 
-import { type AuthUser, signOut as authSignOut, getCurrentUser, onAuthStateChange } from './api/authApi'
+import { type AuthUser, signOut as authSignOut, getCurrentUser, onAuthStateChange, getInitialAuthUser } from './api/authApi'
 
 export default function App() {
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [authLoading, setAuthLoading] = useState(true)
+  const initialUser = getInitialAuthUser()
+  const [user, setUser] = useState<AuthUser | null>(initialUser)
+  const [authLoading, setAuthLoading] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
-  const [conversationId, setConversationId] = useState<string>('conv_demo')
+  const [conversationId, setConversationId] = useState<string>(() => {
+    if (initialUser) {
+      const saved = localStorage.getItem(`trace_active_conversation_${initialUser.id}`)
+      if (saved && saved !== 'conv_demo') return saved
+    }
+    return 'conv_demo'
+  })
 
   const [activeTab, setActiveTab] = useState<'chat' | 'files' | 'retrieval' | 'graph'>('files')
   const [sidebarOpen, setSidebarOpen] = useState(true)

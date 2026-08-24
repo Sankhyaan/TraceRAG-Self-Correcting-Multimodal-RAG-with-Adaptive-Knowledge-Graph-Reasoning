@@ -98,6 +98,28 @@ export async function verifyPhoneOtp(phone: string, token: string): Promise<Auth
   }
 }
 
+/** Synchronously read the persisted Supabase session from localStorage to prevent initial render flicker */
+export function getInitialAuthUser(): AuthUser | null {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+        const item = localStorage.getItem(key)
+        if (item) {
+          const parsed = JSON.parse(item)
+          const user = parsed?.user
+          if (user?.id) {
+            return { id: user.id, email: user.email ?? '' }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    // Ignore parse errors
+  }
+  return null
+}
+
 /** Get the currently active user (from persisted session) */
 export async function getCurrentUser(): Promise<AuthUser | null> {
   const {
