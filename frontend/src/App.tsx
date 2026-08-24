@@ -57,14 +57,13 @@ export default function App() {
       } else if (!u && user) {
         setAuthTransition({
           title: 'Signing you out...',
-          subtitle: 'Switching to Guest Demo workspace...',
+          subtitle: 'Restoring Guest Demo workspace...',
         })
       }
       setUser(u)
       if (!u) {
         invalidateConversationsCache()
         setConversationId('conv_demo')
-        setTimeout(() => setAuthTransition(null), 400)
       } else {
         const saved = localStorage.getItem(`trace_active_conversation_${u.id}`)
         if (saved && saved !== 'conv_demo') {
@@ -77,39 +76,47 @@ export default function App() {
   }, [])
 
 
-  // Load conversations based on auth state
+  // Load conversations and preload assets based on auth state
   useEffect(() => {
     if (!user) {
       // Guest Mode — default to the canonical VoltBus demo workspace
       setConversationId('conv_demo')
-      listConversations().catch((e) => console.warn('Could not load demo conversation:', e))
+      listConversations()
+        .then(async () => {
+          const { listFiles } = await import('./api/filesApi')
+          await listFiles('conv_demo').catch(() => {})
+        })
+        .catch((e) => console.warn('Could not load demo conversation:', e))
+        .finally(() => {
+          setTimeout(() => {
+            setAuthTransition(null)
+          }, 500)
+        })
       return
     }
 
     const userStorageKey = `trace_active_conversation_${user.id}`
     const saved = localStorage.getItem(userStorageKey)
-    if (saved && saved !== 'conv_demo') {
-      setConversationId(saved)
-    }
 
     listConversations()
       .then(async (list) => {
+        let activePersonalId = ''
         const personalList = (list || []).filter((c) => !c.is_demo && c.id !== 'conv_demo')
         if (personalList.length > 0) {
           const exists = saved ? personalList.find((c) => c.id === saved) : null
-          if (exists) {
-            setConversationId(exists.id)
-          } else {
-            setConversationId(personalList[0].id)
-            localStorage.setItem(userStorageKey, personalList[0].id)
-          }
+          activePersonalId = exists ? exists.id : personalList[0].id
         } else {
           // If no personal conversation exists yet, immediately create a fresh one!
           const { createConversation } = await import('./api/conversationsApi')
           const newConv = await createConversation('New Conversation')
-          setConversationId(newConv.id)
-          localStorage.setItem(userStorageKey, newConv.id)
+          activePersonalId = newConv.id
         }
+        setConversationId(activePersonalId)
+        localStorage.setItem(userStorageKey, activePersonalId)
+
+        // Pre-fetch files for this conversation so it renders 100% loaded
+        const { listFiles } = await import('./api/filesApi')
+        await listFiles(activePersonalId).catch(() => {})
       })
       .catch((e) => console.warn('Could not list conversations on load:', e))
       .finally(() => {
@@ -227,19 +234,21 @@ export default function App() {
   const handleSignOut = async () => {
     setAuthTransition({
       title: 'Signing you out...',
-      subtitle: 'Switching to Guest Demo workspace...',
+      subtitle: 'Restoring Guest Demo workspace...',
     })
     invalidateConversationsCache()
     setConversationId('conv_demo')
     setUser(null)
     try {
       await authSignOut()
+      const { listFiles } = await import('./api/filesApi')
+      await listFiles('conv_demo').catch(() => {})
     } catch (e) {
       console.warn('Sign out error', e)
     } finally {
       setTimeout(() => {
         setAuthTransition(null)
-      }, 400)
+      }, 500)
     }
   }
 
