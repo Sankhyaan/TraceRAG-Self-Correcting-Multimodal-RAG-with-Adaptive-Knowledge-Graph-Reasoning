@@ -49,10 +49,22 @@ export default function App() {
       setAuthLoading(false)
     })
     const unsub = onAuthStateChange((u) => {
+      if (u && !user) {
+        setAuthTransition({
+          title: 'Signing you in...',
+          subtitle: 'Preparing your personal workspace & knowledge graphs...',
+        })
+      } else if (!u && user) {
+        setAuthTransition({
+          title: 'Signing you out...',
+          subtitle: 'Switching to Guest Demo workspace...',
+        })
+      }
       setUser(u)
       if (!u) {
         invalidateConversationsCache()
         setConversationId('conv_demo')
+        setTimeout(() => setAuthTransition(null), 400)
       } else {
         const saved = localStorage.getItem(`trace_active_conversation_${u.id}`)
         if (saved && saved !== 'conv_demo') {
@@ -74,7 +86,6 @@ export default function App() {
       return
     }
 
-
     const userStorageKey = `trace_active_conversation_${user.id}`
     const saved = localStorage.getItem(userStorageKey)
     if (saved && saved !== 'conv_demo') {
@@ -82,20 +93,29 @@ export default function App() {
     }
 
     listConversations()
-      .then((list) => {
-        if (list && list.length > 0) {
-          const exists = saved ? list.find((c) => c.id === saved) : null
+      .then(async (list) => {
+        const personalList = (list || []).filter((c) => !c.is_demo && c.id !== 'conv_demo')
+        if (personalList.length > 0) {
+          const exists = saved ? personalList.find((c) => c.id === saved) : null
           if (exists) {
             setConversationId(exists.id)
           } else {
-            setConversationId(list[0].id)
-            localStorage.setItem(userStorageKey, list[0].id)
+            setConversationId(personalList[0].id)
+            localStorage.setItem(userStorageKey, personalList[0].id)
           }
+        } else {
+          // If no personal conversation exists yet, immediately create a fresh one!
+          const { createConversation } = await import('./api/conversationsApi')
+          const newConv = await createConversation('New Conversation')
+          setConversationId(newConv.id)
+          localStorage.setItem(userStorageKey, newConv.id)
         }
       })
       .catch((e) => console.warn('Could not list conversations on load:', e))
       .finally(() => {
-        setAuthTransition(null)
+        setTimeout(() => {
+          setAuthTransition(null)
+        }, 500)
       })
   }, [user])
 
