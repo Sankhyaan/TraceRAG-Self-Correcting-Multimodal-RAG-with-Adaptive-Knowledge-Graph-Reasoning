@@ -657,20 +657,44 @@ export const FileManager: React.FC<FileManagerProps> = ({
           <button
             type="button"
             disabled={uploading}
-            className="btn btn-primary"
             style={{
-              padding: '0.42rem 0.95rem',
-              fontSize: '0.78rem',
+              padding: '0.45rem 1.1rem',
+              fontSize: '0.82rem',
               fontWeight: 700,
               flexShrink: 0,
-              boxShadow: '0 2px 10px rgba(99, 102, 241, 0.35)',
+              background: 'linear-gradient(135deg, #0284c7 0%, #3b82f6 50%, #8b5cf6 100%)',
+              color: '#ffffff',
+              borderRadius: '10px',
+              border: '1px solid rgba(255, 255, 255, 0.25)',
+              boxShadow: '0 4px 16px rgba(59, 130, 246, 0.4)',
+              cursor: uploading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+              letterSpacing: '0.02em',
+            }}
+            onMouseEnter={(e) => {
+              if (!uploading) {
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'
+                e.currentTarget.style.boxShadow = '0 6px 22px rgba(59, 130, 246, 0.6), 0 0 18px rgba(6, 182, 212, 0.45)'
+                e.currentTarget.style.background = 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #a855f7 100%)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!uploading) {
+                e.currentTarget.style.transform = 'none'
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.4)'
+                e.currentTarget.style.background = 'linear-gradient(135deg, #0284c7 0%, #3b82f6 50%, #8b5cf6 100%)'
+              }
             }}
             onClick={(e) => {
               e.stopPropagation()
               fileInputRef.current?.click()
             }}
           >
-            {uploading ? 'Uploading...' : 'Select Files'}
+            <span>{uploading ? '⏳' : '📁'}</span>
+            <span>{uploading ? 'Uploading...' : 'Select Files'}</span>
           </button>
         )}
       </div>
