@@ -861,7 +861,7 @@ export const FileManager: React.FC<FileManagerProps> = ({
           </p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: '0.75rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 240px))', gap: '0.75rem' }}>
           {files.map((file) => {
             const style = getTypeColor(file.file_type)
             const statusBadge = getStatusBadge(file)

@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from backend.auth import get_current_user_id
 from backend.config import get_settings
 from backend.storage import storage_service, get_supabase
-from backend.ingest.manager import extraction_manager as ingest_manager
+from backend.ingest.manager import extraction_manager
 from fastapi.responses import FileResponse as FastFileResponse, RedirectResponse
 
 

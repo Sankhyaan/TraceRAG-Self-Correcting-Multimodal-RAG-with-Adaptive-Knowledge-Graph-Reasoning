@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Sidebar } from './components/Sidebar'
 import { FileManager } from './components/FileManager'
 import { RetrievalTester } from './components/RetrievalTester'
@@ -18,6 +18,8 @@ export default function App() {
 
   const initialUser = getInitialAuthUser()
   const [user, setUser] = useState<AuthUser | null>(initialUser)
+  const currentUserRef = useRef<string | null>(initialUser?.id ?? null)
+
   const [authLoading, setAuthLoading] = useState(false)
   const [authTransition, setAuthTransition] = useState<{
     title: string
@@ -53,10 +55,16 @@ export default function App() {
     : (!user ? 'conv_demo' : (conversationId === 'conv_demo' ? '' : conversationId))
   const isGuestWorkspace = !user && !isAuthenticating
 
+  // Keep ref synchronized with state
+  useEffect(() => {
+    currentUserRef.current = user?.id ?? null
+  }, [user])
+
   // Restore session on mount
   useEffect(() => {
     getCurrentUser().then((u) => {
       setUser(u)
+      currentUserRef.current = u?.id ?? null
       if (!u) {
         invalidateConversationsCache()
         setConversationId('conv_demo')
@@ -72,7 +80,20 @@ export default function App() {
     })
     const unsub = onAuthStateChange((u, _session, event) => {
       if (event === 'SIGNED_IN' && u) {
-        // 1. Show the transition overlay immediately
+        // If this is the same user already active, this is merely a background session check on tab focus — ignore it!
+        if (currentUserRef.current === u.id) {
+          return
+        }
+        currentUserRef.current = u.id
+
+        // Clear the OAuth hash from the browser URL so it doesn't persist across navigation/refreshes
+        if (typeof window !== 'undefined' && (window.location.hash || window.location.search.includes('code='))) {
+          try {
+            window.history.replaceState(null, '', window.location.pathname)
+          } catch (e) {}
+        }
+
+        // 1. Show the transition overlay immediately for genuine sign-ins
         setAuthTransition({
           title: 'Signing you in...',
           subtitle: 'Preparing your personal workspace & knowledge graphs...',
@@ -84,6 +105,7 @@ export default function App() {
         // 3. Update user (triggers useEffect[user] to fetch fresh conversation from backend)
         setUser(u)
       } else if (event === 'SIGNED_OUT') {
+        currentUserRef.current = null
         setAuthTransition({
           title: 'Signing you out...',
           subtitle: 'Restoring Guest Demo workspace...',
@@ -92,6 +114,7 @@ export default function App() {
         setConversationId('conv_demo')
         setUser(null)
       } else if (u) {
+        currentUserRef.current = u.id
         // Only update user state if the identity actually changed (prevent re-renders on tab focus)
         setUser((prev) => (prev?.id === u.id && prev?.email === u.email ? prev : u))
       }
