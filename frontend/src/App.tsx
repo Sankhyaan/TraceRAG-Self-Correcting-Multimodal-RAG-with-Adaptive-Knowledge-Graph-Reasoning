@@ -29,6 +29,11 @@ export default function App() {
       if (!u) {
         invalidateConversationsCache()
         setConversationId('conv_demo')
+      } else {
+        const saved = localStorage.getItem(`trace_active_conversation_${u.id}`)
+        if (saved && saved !== 'conv_demo') {
+          setConversationId(saved)
+        }
       }
       setAuthLoading(false)
     })
@@ -37,6 +42,11 @@ export default function App() {
       if (!u) {
         invalidateConversationsCache()
         setConversationId('conv_demo')
+      } else {
+        const saved = localStorage.getItem(`trace_active_conversation_${u.id}`)
+        if (saved && saved !== 'conv_demo') {
+          setConversationId(saved)
+        }
       }
       setAuthLoading(false)
     })
@@ -56,6 +66,9 @@ export default function App() {
 
     const userStorageKey = `trace_active_conversation_${user.id}`
     const saved = localStorage.getItem(userStorageKey)
+    if (saved && saved !== 'conv_demo') {
+      setConversationId(saved)
+    }
 
     listConversations()
       .then((list) => {

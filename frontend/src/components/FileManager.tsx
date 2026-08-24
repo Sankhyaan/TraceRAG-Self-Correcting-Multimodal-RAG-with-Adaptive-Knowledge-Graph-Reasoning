@@ -541,9 +541,13 @@ export const FileManager: React.FC<FileManagerProps> = ({
         onDrop={(e) => {
           e.preventDefault()
           setDragOver(false)
-          if (isGuest || conversationId === 'conv_demo') {
+          if (isGuest) {
             setError('File uploads are disabled in Guest Demo Mode. Please sign in to create personal workspaces and upload custom files.')
             if (onOpenAuth) onOpenAuth()
+            return
+          }
+          if (conversationId === 'conv_demo') {
+            setError('The VoltBus Demo workspace is read-only. Please select or create your personal workspace from the left sidebar to upload files.')
             return
           }
           if (e.dataTransfer.files) handleFileUpload(e.dataTransfer.files)
@@ -566,9 +570,9 @@ export const FileManager: React.FC<FileManagerProps> = ({
           cursor: isGuest || conversationId === 'conv_demo' ? 'default' : 'pointer',
         }}
         onClick={() => {
-          if (isGuest || conversationId === 'conv_demo') {
+          if (isGuest) {
             if (onOpenAuth) onOpenAuth()
-          } else {
+          } else if (conversationId !== 'conv_demo') {
             fileInputRef.current?.click()
           }
         }}
@@ -586,25 +590,29 @@ export const FileManager: React.FC<FileManagerProps> = ({
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flex: 1, minWidth: '240px' }}>
           <div style={{ fontSize: '1.6rem', flexShrink: 0 }}>
-            {uploading ? '⏳' : isGuest || conversationId === 'conv_demo' ? '🔒' : '📤'}
+            {uploading ? '⏳' : isGuest ? '🔒' : conversationId === 'conv_demo' ? '🌟' : '📤'}
           </div>
           <div>
             <h3 style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-              {isGuest || conversationId === 'conv_demo'
+              {isGuest
                 ? 'File Uploads Locked in Guest Mode'
+                : conversationId === 'conv_demo'
+                ? 'VoltBus Demo Workspace (Read-Only)'
                 : uploading
                 ? 'Uploading & Extracting Content...'
                 : 'Drag & drop files here, or browse to upload'}
             </h3>
             <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.15rem 0 0 0' }}>
-              {isGuest || conversationId === 'conv_demo'
+              {isGuest
                 ? 'Sign in to create your own personal workspaces, upload custom documents, and persist chats.'
+                : conversationId === 'conv_demo'
+                ? 'This is the shared VoltBus demo workspace. Select or create your own personal chat from the sidebar to upload files.'
                 : 'Supports PDF, DOCX, TXT, PNG, JPG, WEBP, MP3, M4A, WAV, MP4, MKV (Auto OCR & Speech-to-Text).'}
             </p>
           </div>
         </div>
 
-        {isGuest || conversationId === 'conv_demo' ? (
+        {isGuest ? (
           <button
             type="button"
             className="btn"
@@ -631,6 +639,20 @@ export const FileManager: React.FC<FileManagerProps> = ({
             <span>🔒</span>
             <span>Sign In to Upload</span>
           </button>
+        ) : conversationId === 'conv_demo' ? (
+          <span
+            style={{
+              padding: '0.35rem 0.75rem',
+              fontSize: '0.74rem',
+              fontWeight: 600,
+              color: '#94a3b8',
+              background: 'rgba(255, 255, 255, 0.05)',
+              borderRadius: '8px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            Read-Only Demo
+          </span>
         ) : (
           <button
             type="button"
