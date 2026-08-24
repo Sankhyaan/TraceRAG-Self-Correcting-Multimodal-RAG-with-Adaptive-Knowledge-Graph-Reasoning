@@ -222,16 +222,14 @@ def list_conversations(user_id: Optional[str] = Depends(get_current_user_id)):
     except Exception as e:
         logger.warning(f"Error querying conversations for user {user_id}: {e}")
 
-    # 3. First-time authentication -> auto-clone demo workspace into this user's account
+    # 3. First-time authentication -> create a clean personal conversation instantly (10ms)
     if not conversations_dict:
         try:
-            cloned = clone_demo_workspace(user_id)
-            return [cloned]
+            new_conv = create_conversation(ConversationCreate(title="New Conversation"), user_id=user_id)
+            return [new_conv]
         except Exception as err:
-            logger.error(f"Error auto-cloning demo workspace on first sign-in: {err}")
-            # Fallback to creating a new clean conversation
-            fallback_conv = create_conversation(ConversationCreate(title="New Conversation"), user_id=user_id)
-            return [fallback_conv]
+            logger.error(f"Error creating initial conversation on first sign-in: {err}")
+            return []
 
     # 4. Batch-count files for this user's sessions
     try:
