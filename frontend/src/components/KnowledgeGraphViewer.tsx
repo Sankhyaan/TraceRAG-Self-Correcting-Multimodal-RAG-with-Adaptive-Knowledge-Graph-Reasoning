@@ -532,13 +532,15 @@ export const KnowledgeGraphViewer: React.FC<KnowledgeGraphViewerProps> = ({ conv
       {/* Cross-File Multi-Hop Path Tracer Card */}
       <div
         style={{
-          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(59, 130, 246, 0.08) 100%)',
-          border: '1px solid rgba(99, 102, 241, 0.3)',
-          borderRadius: '12px',
-          padding: '1rem 1.25rem',
+          background: 'linear-gradient(135deg, rgba(30, 27, 75, 0.5) 0%, rgba(15, 23, 42, 0.75) 100%)',
+          backdropFilter: 'blur(16px)',
+          border: '1px solid rgba(168, 85, 247, 0.35)',
+          borderRadius: '14px',
+          padding: '1.1rem 1.35rem',
           display: 'flex',
           flexDirection: 'column',
           gap: '0.85rem',
+          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.35), 0 0 20px rgba(168, 85, 247, 0.14)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>

@@ -624,12 +624,18 @@ export const RetrievalTester: React.FC<RetrievalTesterProps> = ({ conversationId
                   <div
                     key={chunk.chunk_id}
                     style={{
-                      background: 'rgba(255,255,255,0.025)',
+                      background: 'rgba(15, 23, 42, 0.72)',
+                      backdropFilter: 'blur(16px)',
                       border: `1px solid ${isExpanded ? s.border : 'rgba(255,255,255,0.08)'}`,
-                      borderRadius: '14px', padding: '1.1rem',
-                      display: 'flex', flexDirection: 'column', gap: '0.8rem',
-                      transition: 'border-color 0.2s, box-shadow 0.2s',
-                      boxShadow: isExpanded ? `0 0 20px ${s.glow}` : 'none',
+                      borderRadius: '14px',
+                      padding: '1.15rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.85rem',
+                      transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
+                      boxShadow: isExpanded
+                        ? `0 0 24px ${s.glow}, 0 8px 30px rgba(0,0,0,0.5)`
+                        : '0 4px 16px rgba(0,0,0,0.25)',
                     }}
                   >
                     {/* ── Chunk Header ── */}

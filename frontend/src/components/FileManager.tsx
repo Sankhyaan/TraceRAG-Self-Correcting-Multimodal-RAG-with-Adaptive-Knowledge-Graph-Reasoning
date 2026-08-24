@@ -697,24 +697,50 @@ export const FileManager: React.FC<FileManagerProps> = ({
           </p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '0.85rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '0.95rem' }}>
           {files.map((file) => {
             const style = getTypeColor(file.file_type)
             const statusBadge = getStatusBadge(file)
+            
+            // Dynamic top border accent color based on modality
+            const topAccent = 
+              file.file_type === 'document' ? '#38bdf8' :
+              file.file_type === 'image' ? '#f59e0b' :
+              file.file_type === 'audio' ? '#f97316' :
+              '#a855f7'
+
             return (
               <div
                 key={file.id}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '12px',
-                  padding: '0.95rem 1.05rem',
-
+                  background: 'rgba(15, 23, 42, 0.72)',
+                  backdropFilter: 'blur(16px)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderTop: `2.5px solid ${topAccent}`,
+                  borderRadius: '14px',
+                  padding: '1rem 1.15rem',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  gap: '0.75rem',
-                  transition: 'transform 0.15s ease, border-color 0.15s ease',
+                  gap: '0.85rem',
+                  boxShadow: '0 6px 22px rgba(0, 0, 0, 0.35)',
+                  transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-3px)'
+                  e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.4)'
+                  e.currentTarget.style.borderTopColor = topAccent
+                  e.currentTarget.style.boxShadow = `0 14px 30px -4px rgba(0, 0, 0, 0.6), 0 0 22px ${topAccent}28`
+                  e.currentTarget.style.background = 'rgba(20, 30, 52, 0.85)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'none'
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'
+                  e.currentTarget.style.borderTopColor = topAccent
+                  e.currentTarget.style.boxShadow = '0 6px 22px rgba(0, 0, 0, 0.35)'
+                  e.currentTarget.style.background = 'rgba(15, 23, 42, 0.72)'
                 }}
               >
                 <div>
@@ -726,10 +752,12 @@ export const FileManager: React.FC<FileManagerProps> = ({
                           color: style.text,
                           border: `1px solid ${style.border}`,
                           borderRadius: '6px',
-                          padding: '0.2rem 0.5rem',
+                          padding: '0.2rem 0.55rem',
                           fontSize: '0.72rem',
-                          fontWeight: 600,
+                          fontWeight: 700,
                           textTransform: 'uppercase',
+                          letterSpacing: '0.04em',
+                          boxShadow: `0 0 10px ${style.border}30`,
                         }}
                       >
                         {style.icon} {file.file_type}
@@ -774,10 +802,10 @@ export const FileManager: React.FC<FileManagerProps> = ({
                   <h4
                     title={file.filename}
                     style={{
-                      fontSize: '0.86rem',
+                      fontSize: '0.88rem',
                       fontWeight: 600,
                       color: 'var(--text-primary)',
-                      marginTop: '0.5rem',
+                      marginTop: '0.55rem',
                       lineHeight: '1.4',
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
@@ -797,15 +825,15 @@ export const FileManager: React.FC<FileManagerProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-                    paddingTop: '0.45rem',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                    paddingTop: '0.55rem',
                     gap: '0.4rem',
                     flexWrap: 'nowrap',
                     overflow: 'hidden',
                   }}
                 >
                   <span style={{
-                    fontSize: '0.7rem',
+                    fontSize: '0.72rem',
                     color: 'var(--text-muted)',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
@@ -814,37 +842,41 @@ export const FileManager: React.FC<FileManagerProps> = ({
                   }}>
                     {formatFileSize(file.file_size_bytes)}
                     {file.uploaded_at && <>
-                      <span style={{ margin: '0 0.25rem', opacity: 0.5 }}>•</span>
+                      <span style={{ margin: '0 0.3rem', opacity: 0.4 }}>•</span>
                       <span>{formatDate(file.uploaded_at)}</span>
                     </>}
                   </span>
 
                   <button
                     onClick={() => handleOpenPreview(file)}
-                    title="Open preview"
+                    title="Open preview and citation context"
                     style={{
-                      background: 'rgba(56, 189, 248, 0.12)',
-                      border: '1px solid rgba(56, 189, 248, 0.5)',
+                      background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%)',
+                      border: '1px solid rgba(56, 189, 248, 0.45)',
                       color: '#38bdf8',
-                      padding: '0.22rem 0.7rem',
+                      padding: '0.25rem 0.75rem',
                       borderRadius: '999px',
                       fontSize: '0.72rem',
                       fontWeight: 700,
                       cursor: 'pointer',
                       letterSpacing: '0.04em',
                       textTransform: 'uppercase',
-                      transition: 'all 0.15s ease',
+                      transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
                       lineHeight: 1.5,
                       whiteSpace: 'nowrap',
                       flexShrink: 0,
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(56, 189, 248, 0.25)'
-                      e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.9)'
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(56, 189, 248, 0.3) 0%, rgba(99, 102, 241, 0.3) 100%)'
+                      e.currentTarget.style.borderColor = '#38bdf8'
+                      e.currentTarget.style.boxShadow = '0 0 14px rgba(56, 189, 248, 0.5)'
+                      e.currentTarget.style.transform = 'translateY(-1px)'
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(56, 189, 248, 0.12)'
-                      e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.5)'
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%)'
+                      e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.45)'
+                      e.currentTarget.style.boxShadow = 'none'
+                      e.currentTarget.style.transform = 'none'
                     }}
                   >
                     View ↗

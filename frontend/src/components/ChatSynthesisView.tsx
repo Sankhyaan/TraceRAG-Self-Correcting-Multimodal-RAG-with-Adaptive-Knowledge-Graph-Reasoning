@@ -369,12 +369,19 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
                 <div
                   style={{
                     maxWidth: isUser ? '80%' : '100%',
-                    background: isUser ? 'var(--accent-blue)' : 'rgba(255, 255, 255, 0.03)',
+                    background: isUser
+                      ? 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)'
+                      : 'rgba(15, 23, 42, 0.75)',
+                    backdropFilter: 'blur(16px)',
                     color: isUser ? '#fff' : 'var(--text-primary)',
-                    border: `1px solid ${isUser ? 'transparent' : 'var(--border-color)'}`,
+                    border: isUser
+                      ? '1px solid rgba(255, 255, 255, 0.15)'
+                      : '1px solid rgba(255, 255, 255, 0.08)',
                     borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                    padding: '1.1rem 1.25rem',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    padding: '1.15rem 1.35rem',
+                    boxShadow: isUser
+                      ? '0 6px 20px rgba(37, 99, 235, 0.35)'
+                      : '0 8px 30px rgba(0, 0, 0, 0.35)',
                     width: isUser ? 'auto' : '100%',
                   }}
                 >

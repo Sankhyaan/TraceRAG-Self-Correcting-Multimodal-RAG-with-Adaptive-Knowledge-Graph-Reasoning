@@ -291,15 +291,20 @@ export default function App() {
               <span
                 style={{
                   fontFamily: 'var(--font-mono)',
-                  color: 'var(--accent-cyan)',
+                  color: '#38bdf8',
                   fontWeight: 600,
                   fontSize: '0.84rem',
                   background: 'rgba(6, 182, 212, 0.12)',
-                  padding: '0.2rem 0.55rem',
-                  borderRadius: '6px',
-                  border: '1px solid rgba(6, 182, 212, 0.3)',
+                  padding: '0.25rem 0.65rem',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(56, 189, 248, 0.35)',
+                  boxShadow: '0 0 14px rgba(6, 182, 212, 0.18)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
                 }}
               >
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 8px #38bdf8', display: 'inline-block' }} />
                 {conversationId === 'conv_demo' ? '🌟 VoltBus Demo' : conversationId}
               </span>
             </div>
@@ -310,15 +315,16 @@ export default function App() {
                 <span
                   style={{
                     fontSize: '0.76rem',
-                    color: '#38bdf8',
-                    background: 'rgba(56, 189, 248, 0.12)',
-                    border: '1px solid rgba(56, 189, 248, 0.3)',
-                    borderRadius: '6px',
-                    padding: '0.22rem 0.55rem',
+                    color: '#a855f7',
+                    background: 'rgba(168, 85, 247, 0.12)',
+                    border: '1px solid rgba(168, 85, 247, 0.35)',
+                    borderRadius: '8px',
+                    padding: '0.25rem 0.65rem',
                     fontWeight: 700,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.3rem',
+                    gap: '0.35rem',
+                    boxShadow: '0 0 12px rgba(168, 85, 247, 0.15)',
                   }}
                 >
                   <span>👤</span>
@@ -505,19 +511,20 @@ export default function App() {
           <div
             style={{
               display: 'flex',
-              background: 'rgba(15, 23, 42, 0.65)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              borderRadius: '12px',
-              padding: '0.25rem',
-              gap: '0.35rem',
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
+              background: 'rgba(11, 16, 27, 0.85)',
+              border: '1px solid rgba(255, 255, 255, 0.09)',
+              borderRadius: '14px',
+              padding: '0.3rem',
+              gap: '0.4rem',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.35)',
+              backdropFilter: 'blur(12px)',
             }}
           >
             {[
-              { id: 'chat', label: 'Chat & Synthesis', icon: '💬', color: '#60a5fa', shadow: 'rgba(59, 130, 246, 0.4)' },
-              { id: 'files', label: 'Files & Ingest', icon: '📁', color: '#38bdf8', shadow: 'rgba(14, 165, 233, 0.4)' },
-              { id: 'retrieval', label: 'Retrieval Inspector', icon: '🔍', color: '#818cf8', shadow: 'rgba(99, 102, 241, 0.4)' },
-              { id: 'graph', label: 'Knowledge Graph', icon: '🕸️', color: '#c084fc', shadow: 'rgba(168, 85, 247, 0.4)' },
+              { id: 'chat', label: 'Chat & Synthesis', icon: '💬', gradient: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)', shadow: 'rgba(59, 130, 246, 0.45)' },
+              { id: 'files', label: 'Files & Ingest', icon: '📁', gradient: 'linear-gradient(135deg, #0284c7 0%, #06b6d4 100%)', shadow: 'rgba(6, 182, 212, 0.45)' },
+              { id: 'retrieval', label: 'Retrieval Inspector', icon: '🔍', gradient: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', shadow: 'rgba(139, 92, 246, 0.45)' },
+              { id: 'graph', label: 'Knowledge Graph', icon: '🕸️', gradient: 'linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%)', shadow: 'rgba(217, 70, 239, 0.45)' },
             ].map((tab) => {
               const isActive = activeTab === tab.id
               return (
@@ -525,29 +532,28 @@ export default function App() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
                   style={{
-                    background: isActive
-                      ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
-                      : 'transparent',
+                    background: isActive ? tab.gradient : 'transparent',
                     color: isActive ? '#ffffff' : 'var(--text-secondary)',
-                    border: isActive ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid transparent',
-                    borderRadius: '9px',
-                    padding: '0.45rem 1rem',
-                    fontSize: '0.82rem',
+                    border: isActive ? '1px solid rgba(255, 255, 255, 0.25)' : '1px solid transparent',
+                    borderRadius: '10px',
+                    padding: '0.48rem 1.1rem',
+                    fontSize: '0.83rem',
                     fontWeight: isActive ? 700 : 500,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.45rem',
-                    boxShadow: isActive ? `0 2px 14px ${tab.shadow}` : 'none',
+                    gap: '0.5rem',
+                    boxShadow: isActive ? `0 3px 18px ${tab.shadow}` : 'none',
                     transform: isActive ? 'translateY(-1px)' : 'none',
-                    transition: 'all 0.18s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {
                       e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
                       e.currentTarget.style.color = '#f8fafc'
                       e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)'
-                      e.currentTarget.style.transform = 'translateY(-1px)'
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.25)'
                     }
                   }}
                   onMouseLeave={(e) => {
@@ -556,6 +562,7 @@ export default function App() {
                       e.currentTarget.style.color = 'var(--text-secondary)'
                       e.currentTarget.style.borderColor = 'transparent'
                       e.currentTarget.style.transform = 'none'
+                      e.currentTarget.style.boxShadow = 'none'
                     }
                   }}
                 >
