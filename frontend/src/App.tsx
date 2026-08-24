@@ -13,6 +13,7 @@ export default function App() {
   const initialUser = getInitialAuthUser()
   const [user, setUser] = useState<AuthUser | null>(initialUser)
   const [authLoading, setAuthLoading] = useState(false)
+  const [isSigningIn, setIsSigningIn] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [conversationId, setConversationId] = useState<string>(() => {
     if (initialUser) {
@@ -67,6 +68,7 @@ export default function App() {
       // Guest Mode — default to the canonical VoltBus demo workspace
       setConversationId('conv_demo')
       listConversations().catch((e) => console.warn('Could not load demo conversation:', e))
+      setIsSigningIn(false)
       return
     }
 
@@ -90,6 +92,9 @@ export default function App() {
         }
       })
       .catch((e) => console.warn('Could not list conversations on load:', e))
+      .finally(() => {
+        setIsSigningIn(false)
+      })
   }, [user])
 
   const handleSelectConversation = (id: string) => {
@@ -223,10 +228,91 @@ export default function App() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onAuthenticated={(u) => {
+          setIsSigningIn(true)
           setUser(u)
           setShowAuthModal(false)
         }}
       />
+
+      {/* Signing In / Workspace Preparation Buffer Overlay */}
+      {isSigningIn && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(8, 11, 17, 0.94)',
+            backdropFilter: 'blur(20px)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            gap: '1.5rem',
+            animation: 'fadeIn 0.15s ease-out',
+          }}
+        >
+          {/* Dual Concentric Glowing Buffer Spinner */}
+          <div style={{ position: 'relative', width: '72px', height: '72px' }}>
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: '50%',
+                border: '3px solid rgba(56, 189, 248, 0.15)',
+                borderTopColor: '#00f0ff',
+                borderRightColor: '#38bdf8',
+                animation: 'spinSlow 1s linear infinite',
+                boxShadow: '0 0 25px rgba(0, 240, 255, 0.35)',
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                inset: '10px',
+                borderRadius: '50%',
+                border: '2.5px solid rgba(168, 85, 247, 0.15)',
+                borderTopColor: '#c084fc',
+                borderBottomColor: '#a855f7',
+                animation: 'spinSlow 0.75s linear infinite reverse',
+                boxShadow: '0 0 15px rgba(168, 85, 247, 0.4)',
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                background: '#00f0ff',
+                boxShadow: '0 0 12px #00f0ff',
+              }}
+            />
+          </div>
+
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            <h3
+              style={{
+                fontSize: '1.25rem',
+                fontWeight: 800,
+                color: '#f8fafc',
+                margin: 0,
+                letterSpacing: '-0.01em',
+                background: 'linear-gradient(135deg, #f8fafc 0%, #38bdf8 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Signing you in...
+            </h3>
+            <p style={{ fontSize: '0.84rem', color: '#94a3b8', margin: 0 }}>
+              Preparing your personal workspace & knowledge graphs...
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Sidebar on the Left */}
       <Sidebar
