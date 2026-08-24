@@ -303,20 +303,26 @@ const FilterPill: React.FC<{
 // Main Component
 // ─────────────────────────────────────────────────────────────────────────────
 export const RetrievalTester: React.FC<RetrievalTesterProps> = ({ conversationId }) => {
-  const [query, setQuery] = useState(DEFAULT_DEMO_RETRIEVAL.query)
+  const isDemo = conversationId === 'conv_demo'
+  const [query, setQuery] = useState(isDemo ? DEFAULT_DEMO_RETRIEVAL.query : '')
   const [topK, setTopK] = useState(5)
   const [alpha, setAlpha] = useState(0.5)
   const [useRouter, setUseRouter] = useState(true)
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<RetrievalResponse | null>(DEFAULT_DEMO_RETRIEVAL)
+  const [result, setResult] = useState<RetrievalResponse | null>(isDemo ? DEFAULT_DEMO_RETRIEVAL : null)
   const [expandedChunks, setExpandedChunks] = useState<Record<string, boolean>>({})
   const [error, setError] = useState<string | null>(null)
   const [activeFilter, setActiveFilter] = useState<FilterType>('all')
 
   useEffect(() => {
-    if (!result) {
+    if (conversationId === 'conv_demo') {
       setQuery(DEFAULT_DEMO_RETRIEVAL.query)
       setResult(DEFAULT_DEMO_RETRIEVAL)
+      setError(null)
+    } else {
+      setQuery('')
+      setResult(null)
+      setError(null)
     }
   }, [conversationId])
 
@@ -837,6 +843,29 @@ export const RetrievalTester: React.FC<RetrievalTesterProps> = ({ conversationId
               })
             )}
           </div>
+        </div>
+      )}
+
+      {/* ── Empty Initial State for Personal Workspaces ───────────────── */}
+      {!result && !loading && !error && (
+        <div style={{
+          textAlign: 'center',
+          padding: '3.5rem 1.5rem',
+          background: 'rgba(255, 255, 255, 0.015)',
+          borderRadius: '16px',
+          border: '1px dashed rgba(255, 255, 255, 0.1)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '0.75rem',
+        }}>
+          <div style={{ fontSize: '2.2rem', opacity: 0.7 }}>🔍</div>
+          <h4 style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 600, margin: 0 }}>
+            Inspect Hybrid Retrieval & Modality Routing
+          </h4>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.84rem', maxWidth: '460px', margin: 0, lineHeight: 1.5 }}>
+            Type a query in the search bar above to test dense vector embeddings, BM25 exact lexical matching, and automatic LLM modality routing weights for this session.
+          </p>
         </div>
       )}
 
