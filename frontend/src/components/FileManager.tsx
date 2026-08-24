@@ -8,6 +8,7 @@ interface FileManagerProps {
   onFileCountChange?: (count: number) => void
   onNavigateTab?: (tab: 'chat' | 'retrieval' | 'graph') => void
   isGuest?: boolean
+  onOpenAuth?: () => void
 }
 
 export const FileManager: React.FC<FileManagerProps> = ({
@@ -16,6 +17,7 @@ export const FileManager: React.FC<FileManagerProps> = ({
   onFileCountChange,
   onNavigateTab,
   isGuest = false,
+  onOpenAuth,
 }) => {
 
 
@@ -93,6 +95,11 @@ export const FileManager: React.FC<FileManagerProps> = ({
   }, [files, conversationId, filterType])
 
   const handleFileUpload = async (selectedFiles: FileList | File[]) => {
+    if (isGuest || conversationId === 'conv_demo') {
+      setError('File uploads are disabled in Guest Demo Mode. Please sign in to create personal workspaces and upload custom files.')
+      if (onOpenAuth) onOpenAuth()
+      return
+    }
     if (!selectedFiles || selectedFiles.length === 0) return
     setUploading(true)
     setError(null)
@@ -528,17 +535,26 @@ export const FileManager: React.FC<FileManagerProps> = ({
       <div
         onDragOver={(e) => {
           e.preventDefault()
-          setDragOver(true)
+          if (!isGuest && conversationId !== 'conv_demo') setDragOver(true)
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={(e) => {
           e.preventDefault()
           setDragOver(false)
+          if (isGuest || conversationId === 'conv_demo') {
+            setError('File uploads are disabled in Guest Demo Mode. Please sign in to create personal workspaces and upload custom files.')
+            if (onOpenAuth) onOpenAuth()
+            return
+          }
           if (e.dataTransfer.files) handleFileUpload(e.dataTransfer.files)
         }}
         style={{
-          border: `1.5px dashed ${dragOver ? '#3b82f6' : 'rgba(255, 255, 255, 0.15)'}`,
-          background: dragOver ? 'rgba(59, 130, 246, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+          border: isGuest || conversationId === 'conv_demo'
+            ? '1px dashed rgba(255, 255, 255, 0.1)'
+            : `1.5px dashed ${dragOver ? '#3b82f6' : 'rgba(255, 255, 255, 0.15)'}`,
+          background: isGuest || conversationId === 'conv_demo'
+            ? 'rgba(255, 255, 255, 0.015)'
+            : dragOver ? 'rgba(59, 130, 246, 0.08)' : 'rgba(255, 255, 255, 0.02)',
           borderRadius: '12px',
           padding: '0.85rem 1.25rem',
           display: 'flex',
@@ -547,14 +563,21 @@ export const FileManager: React.FC<FileManagerProps> = ({
           flexWrap: 'wrap',
           gap: '0.75rem',
           transition: 'all 0.2s ease',
-          cursor: 'pointer',
+          cursor: isGuest || conversationId === 'conv_demo' ? 'default' : 'pointer',
         }}
-        onClick={() => fileInputRef.current?.click()}
+        onClick={() => {
+          if (isGuest || conversationId === 'conv_demo') {
+            if (onOpenAuth) onOpenAuth()
+          } else {
+            fileInputRef.current?.click()
+          }
+        }}
       >
         <input
           ref={fileInputRef}
           type="file"
           multiple
+          disabled={isGuest || conversationId === 'conv_demo'}
           onChange={(e) => {
             if (e.target.files) handleFileUpload(e.target.files)
           }}
@@ -563,36 +586,71 @@ export const FileManager: React.FC<FileManagerProps> = ({
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flex: 1, minWidth: '240px' }}>
           <div style={{ fontSize: '1.6rem', flexShrink: 0 }}>
-            {uploading ? '⏳' : '📤'}
+            {uploading ? '⏳' : isGuest || conversationId === 'conv_demo' ? '🔒' : '📤'}
           </div>
           <div>
             <h3 style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-              {uploading ? 'Uploading & Extracting Content...' : 'Drag & drop files here, or browse to upload'}
+              {isGuest || conversationId === 'conv_demo'
+                ? 'File Uploads Locked in Guest Mode'
+                : uploading
+                ? 'Uploading & Extracting Content...'
+                : 'Drag & drop files here, or browse to upload'}
             </h3>
             <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.15rem 0 0 0' }}>
-              Supports PDF, DOCX, TXT, PNG, JPG, WEBP, MP3, M4A, WAV, MP4, MKV (Auto OCR & Speech-to-Text).
+              {isGuest || conversationId === 'conv_demo'
+                ? 'Sign in to create your own personal workspaces, upload custom documents, and persist chats.'
+                : 'Supports PDF, DOCX, TXT, PNG, JPG, WEBP, MP3, M4A, WAV, MP4, MKV (Auto OCR & Speech-to-Text).'}
             </p>
           </div>
         </div>
 
-        <button
-          type="button"
-          disabled={uploading}
-          className="btn btn-primary"
-          style={{
-            padding: '0.42rem 0.95rem',
-            fontSize: '0.78rem',
-            fontWeight: 700,
-            flexShrink: 0,
-            boxShadow: '0 2px 10px rgba(99, 102, 241, 0.35)',
-          }}
-          onClick={(e) => {
-            e.stopPropagation()
-            fileInputRef.current?.click()
-          }}
-        >
-          {uploading ? 'Uploading...' : 'Select Files'}
-        </button>
+        {isGuest || conversationId === 'conv_demo' ? (
+          <button
+            type="button"
+            className="btn"
+            style={{
+              padding: '0.42rem 0.95rem',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              flexShrink: 0,
+              background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
+              color: '#fff',
+              borderRadius: '8px',
+              border: 'none',
+              boxShadow: '0 2px 10px rgba(99, 102, 241, 0.35)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+            }}
+            onClick={(e) => {
+              e.stopPropagation()
+              if (onOpenAuth) onOpenAuth()
+            }}
+          >
+            <span>🔒</span>
+            <span>Sign In to Upload</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled={uploading}
+            className="btn btn-primary"
+            style={{
+              padding: '0.42rem 0.95rem',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              flexShrink: 0,
+              boxShadow: '0 2px 10px rgba(99, 102, 241, 0.35)',
+            }}
+            onClick={(e) => {
+              e.stopPropagation()
+              fileInputRef.current?.click()
+            }}
+          >
+            {uploading ? 'Uploading...' : 'Select Files'}
+          </button>
+        )}
       </div>
 
 

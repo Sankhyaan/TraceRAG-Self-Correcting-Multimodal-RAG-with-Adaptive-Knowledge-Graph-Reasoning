@@ -583,13 +583,13 @@ export default function App() {
             <FileManager
               conversationId={conversationId}
               isGuest={!user}
+              onOpenAuth={() => setShowAuthModal(true)}
               onFilesChanged={() => setFilesChangeSignal((prev) => prev + 1)}
               onFileCountChange={(count) =>
                 setFileCounts((prev) => ({ ...prev, [conversationId]: count }))
               }
               onNavigateTab={(tab) => setActiveTab(tab)}
             />
-
           </div>
           <div style={{ display: activeTab === 'retrieval' ? 'flex' : 'none', flexDirection: 'column', flex: 1, minHeight: 0 }}>
             <RetrievalTester conversationId={conversationId} />
