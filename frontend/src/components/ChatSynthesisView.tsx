@@ -37,8 +37,8 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
   const [loading, setLoading] = useState(false)
   const [loadingHistory, setLoadingHistory] = useState(false)
   const [livePipeline, setLivePipeline] = useState<LivePipelineStatus>({ stage: 'idle' })
-  const [activeInspectorMsgId, setActiveInspectorMsgId] = useState<string | null>(null)
   const [selectedCitation, setSelectedCitation] = useState<CitationVerification | null>(null)
+  const [inspectingSynthesis, setInspectingSynthesis] = useState<SynthesisResult | null>(null)
   const [modalConfig, setModalConfig] = useState<{
     fileId: string | null
     filename?: string | null
@@ -120,7 +120,7 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
       .then((persisted) => {
         if (isMounted) {
           setMessages(formatMessages(persisted))
-          setActiveInspectorMsgId(null)
+          setInspectingSynthesis(null)
         }
       })
       .catch((err) => console.warn('Failed to load message history:', err))
@@ -137,7 +137,7 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
   useEffect(() => {
     if (clearSignal) {
       setMessages([])
-      setActiveInspectorMsgId(null)
+      setInspectingSynthesis(null)
     }
   }, [clearSignal])
 
@@ -353,7 +353,6 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
           messages.map((msg) => {
             const isUser = msg.role === 'user'
             const synthesis = msg.synthesis
-            const isInspectorOpen = activeInspectorMsgId === msg.id
 
             return (
               <div
@@ -511,21 +510,17 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
                         )}
                       </div>
 
-                      {/* Glowing Neon Pink Critic & Citations Inspector Trigger */}
+                      {/* Glowing Neon Pink Critic & Citations Inspector In-App Window Trigger */}
                       {!synthesis.routed_categories?.includes('conversational') && (
                         <button
-                          onClick={() => setActiveInspectorMsgId(isInspectorOpen ? null : msg.id)}
+                          onClick={() => setInspectingSynthesis(synthesis)}
                           style={{
-                            background: isInspectorOpen
-                              ? 'linear-gradient(135deg, rgba(244, 63, 94, 0.35) 0%, rgba(236, 72, 153, 0.45) 100%)'
-                              : 'linear-gradient(135deg, rgba(244, 63, 94, 0.18) 0%, rgba(236, 72, 153, 0.25) 100%)',
+                            background: 'linear-gradient(135deg, rgba(244, 63, 94, 0.22) 0%, rgba(236, 72, 153, 0.32) 100%)',
                             color: '#ffffff',
-                            border: isInspectorOpen
-                              ? '1px solid rgba(244, 63, 94, 0.9)'
-                              : '1px solid rgba(244, 63, 94, 0.55)',
+                            border: '1px solid rgba(244, 63, 94, 0.75)',
                             borderRadius: '24px',
-                            padding: '0.32rem 0.85rem',
-                            fontSize: '0.78rem',
+                            padding: '0.35rem 0.95rem',
+                            fontSize: '0.8rem',
                             fontWeight: 700,
                             cursor: 'pointer',
                             display: 'inline-flex',
@@ -534,6 +529,7 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
                             animation: 'neonPinkPulse 2.2s infinite ease-in-out',
                             transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                             letterSpacing: '0.02em',
+                            boxShadow: '0 0 18px rgba(244, 63, 94, 0.4)',
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'
@@ -541,7 +537,7 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
                           }}
                           onMouseLeave={(e) => {
                             e.currentTarget.style.transform = 'none'
-                            e.currentTarget.style.boxShadow = ''
+                            e.currentTarget.style.boxShadow = '0 0 18px rgba(244, 63, 94, 0.4)'
                           }}
                         >
                           {/* Pulsing Neon Dot */}
@@ -558,13 +554,13 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
 
                           <span style={{ fontSize: '0.88rem' }}>🛡️</span>
                           <span style={{ color: '#fff', textShadow: '0 0 8px rgba(244, 63, 94, 0.6)' }}>
-                            {isInspectorOpen ? 'Hide Critic & Citations' : 'Inspect Citations'}
+                            Inspect Citations
                           </span>
 
                           {/* Glowing Pink Count Badge */}
                           <span
                             style={{
-                              background: 'rgba(244, 63, 94, 0.4)',
+                              background: 'rgba(244, 63, 94, 0.45)',
                               color: '#fff',
                               border: '1px solid rgba(255, 255, 255, 0.5)',
                               borderRadius: '999px',
@@ -580,13 +576,11 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
 
                           <span
                             style={{
-                              fontSize: '0.65rem',
+                              fontSize: '0.72rem',
                               color: '#fda4af',
-                              transform: isInspectorOpen ? 'rotate(180deg)' : 'none',
-                              transition: 'transform 0.25s ease',
                             }}
                           >
-                            ▼
+                            ↗
                           </span>
                         </button>
                       )}
@@ -922,171 +916,7 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
                     </div>
                   )}
 
-                  {/* Verification & Critic Inspector Panel */}
-                  {!isUser && synthesis && isInspectorOpen && (
-                    <div
-                      style={{
-                        marginTop: '1rem',
-                        padding: '1rem',
-                        background: 'rgba(0, 0, 0, 0.35)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '10px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.85rem',
-                      }}
-                    >
-                      {/* Critic Evaluation Details */}
-                      <div>
-                        <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>
-                          🎯 Retrieval Critic Diagnosis
-                        </div>
-                        <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', margin: 0 }}>
-                          {synthesis.critic.reason}
-                        </p>
-                        {synthesis.critic.missing_aspects && synthesis.critic.missing_aspects.length > 0 && (
-                          <div style={{ marginTop: '0.35rem', display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: '0.75rem', color: '#f87171' }}>Missing:</span>
-                            {synthesis.critic.missing_aspects.map((asp, idx) => (
-                              <span
-                                key={idx}
-                                style={{
-                                  background: 'rgba(239, 68, 68, 0.15)',
-                                  color: '#fca5a5',
-                                  borderRadius: '4px',
-                                  padding: '0.05rem 0.4rem',
-                                  fontSize: '0.72rem',
-                                }}
-                              >
-                                {asp}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
 
-                      {/* Retry Diagnosis if triggered */}
-                      {synthesis.retry_info.retried && (
-                        <div style={{ padding: '0.6rem 0.8rem', background: 'rgba(168, 85, 247, 0.1)', border: '1px solid rgba(168, 85, 247, 0.25)', borderRadius: '6px' }}>
-                          <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#c084fc', marginBottom: '0.2rem' }}>
-                            🔄 Query Reformulation Details:
-                          </div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                            <div>Original: <span style={{ color: 'var(--text-muted)' }}>"{synthesis.retry_info.original_query}"</span></div>
-                            <div>Reformulated: <strong style={{ color: '#e9d5ff' }}>"{synthesis.retry_info.reformulated_query}"</strong></div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Claim-by-Claim Citation Cards */}
-                      <div>
-                        <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-                          🔍 Claim-by-Claim Citation Verification ({synthesis.citations.length})
-                        </div>
-
-                        {synthesis.citations.length === 0 ? (
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                            No specific numbered citations extracted.
-                          </div>
-                        ) : (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            {synthesis.citations.map((cit, idx) => {
-                              const isVer = cit.is_grounded
-                              const effectiveTs = getEffectiveTimestamp(cit.evidence_quote, cit.timestamp)
-                              return (
-                                <div
-                                  key={idx}
-                                  style={{
-                                    background: 'rgba(255, 255, 255, 0.02)',
-                                    border: `1px solid ${isVer ? 'rgba(52, 211, 153, 0.25)' : 'rgba(248, 113, 113, 0.25)'}`,
-                                    borderRadius: '8px',
-                                    padding: '0.65rem 0.85rem',
-                                  }}
-                                >
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.4rem' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                      <span
-                                        style={{
-                                          background: 'rgba(56, 189, 248, 0.15)',
-                                          color: '#38bdf8',
-                                          padding: '0.1rem 0.4rem',
-                                          borderRadius: '4px',
-                                          fontSize: '0.75rem',
-                                          fontWeight: 700,
-                                        }}
-                                      >
-                                        [{cit.passage_number}]
-                                      </span>
-                                      <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                                        {cit.filename || 'Source Document'}
-                                        {cit.page_number && ` (Page ${cit.page_number})`}
-                                        {effectiveTs && ` (⏱️ ${effectiveTs})`}
-                                      </span>
-                                    </div>
-
-                                    <span
-                                      style={{
-                                        fontSize: '0.7rem',
-                                        fontWeight: 700,
-                                        color: isVer ? '#34d399' : '#f87171',
-                                        background: isVer ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                                        padding: '0.15rem 0.45rem',
-                                        borderRadius: '4px',
-                                      }}
-                                    >
-                                      {isVer ? '✓ VERIFIED' : '⚠️ UNSUPPORTED'}
-                                    </span>
-                                  </div>
-
-                                  <div style={{ fontSize: '0.82rem', color: 'var(--text-primary)', marginBottom: '0.4rem', lineHeight: '1.4' }}>
-                                    <strong style={{ color: 'var(--text-muted)', marginRight: '0.3rem' }}>Claim:</strong>
-                                    {renderFormattedSnippet(cit.claim_text)}
-                                  </div>
-
-                                  {cit.evidence_quote && (
-                                    <div style={{ fontSize: '0.78rem', color: '#94a3b8', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.04)', padding: '0.5rem 0.75rem', borderRadius: '6px', lineHeight: '1.45' }}>
-                                      <strong style={{ color: 'var(--text-muted)', marginRight: '0.3rem' }}>Evidence:</strong>
-                                      {renderFormattedSnippet(cit.evidence_quote)}
-                                    </div>
-                                  )}
-
-                                  {cit.file_id && (
-                                    <button
-                                      onClick={() =>
-                                        setModalConfig({
-                                          fileId: cit.file_id || null,
-                                          filename: cit.filename,
-                                          fileType: cit.filename?.toLowerCase().match(/\.(mp3|wav|ogg|m4a|aac|flac)$/) ? 'audio' :
-                                                    cit.filename?.toLowerCase().match(/\.(mp4|webm|mov|mkv)$/) ? 'video' :
-                                                    cit.filename?.toLowerCase().match(/\.(png|jpe?g|webp|gif)$/) ? 'image' :
-                                                    cit.filename?.toLowerCase().endsWith('.pdf') ? 'pdf' : 'document',
-                                          pageNumber: cit.page_number,
-                                          timestamp: effectiveTs,
-                                          evidence: cit.evidence_quote,
-                                        })
-                                      }
-                                      style={{
-                                        marginTop: '0.4rem',
-                                        background: 'transparent',
-                                        border: 'none',
-                                        color: 'var(--accent-blue)',
-                                        fontSize: '0.75rem',
-                                        fontWeight: 600,
-                                        cursor: 'pointer',
-                                        padding: 0,
-                                      }}
-                                    >
-                                      📄 View {cit.page_number ? `Page ${cit.page_number}` : effectiveTs ? `Timestamp ${effectiveTs}` : 'Source'} & Extraction ➔
-                                    </button>
-                                  )}
-                                </div>
-                              )
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
 
                   {/* Timestamp */}
                   <div
@@ -1486,6 +1316,342 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Citations & Grounding Inspector In-App Window Modal ──────────── */}
+      {inspectingSynthesis && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.84)',
+            backdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1050,
+            padding: '1.25rem',
+            animation: 'fadeIn 0.15s ease-out',
+          }}
+          onClick={() => setInspectingSynthesis(null)}
+        >
+          <div
+            style={{
+              background: 'radial-gradient(ellipse at top, #1e1b4b 0%, #090d16 100%)',
+              border: '1px solid rgba(244, 63, 94, 0.45)',
+              borderRadius: '22px',
+              maxWidth: '840px',
+              width: '100%',
+              maxHeight: '88vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 30px 70px -15px rgba(0, 0, 0, 0.95), 0 0 45px rgba(244, 63, 94, 0.25)',
+              animation: 'scaleUp 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+              overflow: 'hidden',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '1.25rem 1.6rem',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                background: 'rgba(255, 255, 255, 0.02)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <div style={{ fontSize: '1.4rem' }}>🛡️</div>
+                <div>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', margin: 0, letterSpacing: '-0.01em' }}>
+                    Verified Citations & Grounding Inspector
+                  </h3>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <span>{inspectingSynthesis.citations?.length || 0} citations extracted</span>
+                    <span>•</span>
+                    <span style={{ color: '#34d399', fontWeight: 600 }}>
+                      {Math.round((inspectingSynthesis.groundedness_score ?? 1) * 100)}% Grounded
+                    </span>
+                    <span>•</span>
+                    <span style={{ color: inspectingSynthesis.confidence === 'high' ? '#34d399' : inspectingSynthesis.confidence === 'medium' ? '#fbbf24' : '#f87171', fontWeight: 700 }}>
+                      ● {(inspectingSynthesis.confidence || 'HIGH').toUpperCase()} CONFIDENCE
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setInspectingSynthesis(null)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  borderRadius: '50%',
+                  width: '34px',
+                  height: '34px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#cbd5e1',
+                  fontSize: '1.1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'
+                  e.currentTarget.style.color = '#f87171'
+                  e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.4)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                  e.currentTarget.style.color = '#cbd5e1'
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body (Scrollable) */}
+            <div
+              style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: '1.4rem 1.6rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1.25rem',
+              }}
+            >
+              {/* Critic Evaluation Diagnostics Card */}
+              {inspectingSynthesis.critic && (
+                <div
+                  style={{
+                    padding: '0.95rem 1.15rem',
+                    background: 'rgba(255, 255, 255, 0.025)',
+                    border: '1px solid rgba(99, 102, 241, 0.25)',
+                    borderRadius: '12px',
+                  }}
+                >
+                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', marginBottom: '0.35rem', letterSpacing: '0.04em' }}>
+                    🎯 Retrieval Critic Assessment
+                  </div>
+                  <p style={{ fontSize: '0.86rem', color: '#e2e8f0', margin: 0, lineHeight: 1.5 }}>
+                    {inspectingSynthesis.critic.reason}
+                  </p>
+                  {inspectingSynthesis.critic.missing_aspects && inspectingSynthesis.critic.missing_aspects.length > 0 && (
+                    <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#f87171', fontWeight: 600 }}>Missing:</span>
+                      {inspectingSynthesis.critic.missing_aspects.map((asp, idx) => (
+                        <span
+                          key={idx}
+                          style={{
+                            background: 'rgba(239, 68, 68, 0.15)',
+                            color: '#fca5a5',
+                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            borderRadius: '6px',
+                            padding: '0.1rem 0.45rem',
+                            fontSize: '0.72rem',
+                          }}
+                        >
+                          {asp}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Auto-Reformulation Retry Details */}
+              {inspectingSynthesis.retry_info?.retried && (
+                <div style={{ padding: '0.75rem 1rem', background: 'rgba(168, 85, 247, 0.1)', border: '1px solid rgba(168, 85, 247, 0.3)', borderRadius: '10px' }}>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#c084fc', marginBottom: '0.3rem' }}>
+                    🔄 Query Reformulation Details:
+                  </div>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                    <div>Original: <span style={{ color: 'var(--text-muted)' }}>"{inspectingSynthesis.retry_info.original_query}"</span></div>
+                    <div>Reformulated: <strong style={{ color: '#e9d5ff' }}>"{inspectingSynthesis.retry_info.reformulated_query}"</strong></div>
+                  </div>
+                </div>
+              )}
+
+              {/* Claim-by-Claim Citation Cards */}
+              <div>
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#f8fafc', marginBottom: '0.75rem', letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>🔍 Claim-by-Claim Citation Evidence ({inspectingSynthesis.citations?.length || 0})</span>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Click source to open document viewer</span>
+                </div>
+
+                {!inspectingSynthesis.citations || inspectingSynthesis.citations.length === 0 ? (
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>
+                    No specific numbered citations extracted for this response.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    {inspectingSynthesis.citations.map((cit, idx) => {
+                      const isVer = cit.is_grounded
+                      const effectiveTs = getEffectiveTimestamp(cit.evidence_quote, cit.timestamp)
+                      const isAudio = cit.filename?.toLowerCase().match(/\.(mp3|wav|ogg|m4a|aac|flac)$/)
+                      const isVideo = cit.filename?.toLowerCase().match(/\.(mp4|webm|mov|mkv)$/)
+                      const isImg = cit.filename?.toLowerCase().match(/\.(png|jpe?g|webp|gif)$/)
+                      const fileType = isAudio ? 'audio' : isVideo ? 'video' : isImg ? 'image' : cit.filename?.toLowerCase().endsWith('.pdf') ? 'pdf' : 'document'
+                      const typeIcon = isAudio ? '🎵' : isVideo ? '🎬' : isImg ? '🖼️' : '📄'
+
+                      return (
+                        <div
+                          key={idx}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.025)',
+                            border: `1px solid ${isVer ? 'rgba(52, 211, 153, 0.35)' : 'rgba(248, 113, 113, 0.35)'}`,
+                            borderRadius: '12px',
+                            padding: '0.9rem 1.1rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.6rem',
+                          }}
+                        >
+                          {/* Citation Header */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                              <span
+                                style={{
+                                  background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(99, 102, 241, 0.35) 100%)',
+                                  color: '#38bdf8',
+                                  border: '1px solid rgba(56, 189, 248, 0.5)',
+                                  padding: '0.15rem 0.55rem',
+                                  borderRadius: '6px',
+                                  fontSize: '0.8rem',
+                                  fontWeight: 800,
+                                  fontFamily: 'var(--font-mono, monospace)',
+                                }}
+                              >
+                                [{cit.passage_number}]
+                              </span>
+                              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                <span>{typeIcon}</span>
+                                <span>{cit.filename || 'Source File'}</span>
+                                {cit.page_number && (
+                                  <span style={{ color: '#38bdf8', fontSize: '0.78rem', background: 'rgba(56, 189, 248, 0.12)', padding: '0.05rem 0.35rem', borderRadius: '4px' }}>
+                                    p. {cit.page_number}
+                                  </span>
+                                )}
+                                {effectiveTs && (
+                                  <span style={{ color: '#fb923c', fontSize: '0.78rem', background: 'rgba(249, 115, 22, 0.12)', padding: '0.05rem 0.35rem', borderRadius: '4px' }}>
+                                    ⏱️ {effectiveTs}
+                                  </span>
+                                )}
+                              </span>
+                            </div>
+
+                            <span
+                              style={{
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                color: isVer ? '#34d399' : '#f87171',
+                                background: isVer ? 'rgba(16, 185, 129, 0.18)' : 'rgba(239, 68, 68, 0.18)',
+                                border: `1px solid ${isVer ? 'rgba(52, 211, 153, 0.4)' : 'rgba(248, 113, 113, 0.4)'}`,
+                                padding: '0.18rem 0.55rem',
+                                borderRadius: '6px',
+                              }}
+                            >
+                              {isVer ? '✓ VERIFIED GROUNDED' : '⚠️ UNSUPPORTED'}
+                            </span>
+                          </div>
+
+                          {/* Claim Box */}
+                          <div style={{ fontSize: '0.86rem', color: '#f1f5f9', lineHeight: 1.5, background: 'rgba(255, 255, 255, 0.02)', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                            <strong style={{ color: 'var(--text-muted)', marginRight: '0.35rem' }}>Synthesized Claim:</strong>
+                            {renderFormattedSnippet(cit.claim_text)}
+                          </div>
+
+                          {/* Evidence Box */}
+                          {cit.evidence_quote && (
+                            <div style={{ fontSize: '0.82rem', color: '#cbd5e1', background: 'rgba(0, 0, 0, 0.4)', border: '1px solid rgba(255, 255, 255, 0.05)', padding: '0.65rem 0.85rem', borderRadius: '8px', lineHeight: 1.55 }}>
+                              <strong style={{ color: '#38bdf8', marginRight: '0.35rem' }}>Verifiable Evidence:</strong>
+                              {renderFormattedSnippet(cit.evidence_quote)}
+                            </div>
+                          )}
+
+                          {/* View Source in Document Viewer Action */}
+                          {cit.file_id && (
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.2rem' }}>
+                              <button
+                                onClick={() => {
+                                  setModalConfig({
+                                    fileId: cit.file_id || null,
+                                    filename: cit.filename,
+                                    fileType: fileType,
+                                    pageNumber: cit.page_number,
+                                    timestamp: effectiveTs,
+                                    evidence: cit.evidence_quote,
+                                  })
+                                }}
+                                style={{
+                                  background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(99, 102, 241, 0.25) 100%)',
+                                  border: '1px solid rgba(56, 189, 248, 0.45)',
+                                  color: '#38bdf8',
+                                  fontSize: '0.78rem',
+                                  fontWeight: 700,
+                                  padding: '0.35rem 0.85rem',
+                                  borderRadius: '8px',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.4rem',
+                                  transition: 'all 0.15s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(56, 189, 248, 0.3) 0%, rgba(99, 102, 241, 0.4) 100%)'
+                                  e.currentTarget.style.transform = 'translateY(-1px)'
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(99, 102, 241, 0.25) 100%)'
+                                  e.currentTarget.style.transform = 'none'
+                                }}
+                              >
+                                <span>📄</span>
+                                <span>Open Source Document {cit.page_number ? `(Page ${cit.page_number})` : effectiveTs ? `(⏱️ ${effectiveTs})` : ''} ➔</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                padding: '0.9rem 1.6rem',
+                borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                background: 'rgba(255, 255, 255, 0.015)',
+              }}
+            >
+              <button
+                onClick={() => setInspectingSynthesis(null)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  color: '#f8fafc',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  borderRadius: '10px',
+                  padding: '0.55rem 1.4rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                Close Inspector
+              </button>
+            </div>
           </div>
         </div>
       )}
