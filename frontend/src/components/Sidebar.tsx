@@ -32,7 +32,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const fetchConversations = async () => {
     try {
       const list = await listConversations()
-      setConversations(list)
+      if (isGuest) {
+        setConversations([DEMO_CONV])
+      } else {
+        setConversations((list || []).filter((c) => !c.is_demo && c.id !== 'conv_demo'))
+      }
     } catch (e) {
       console.warn('Failed to load conversations', e)
     }
@@ -51,6 +55,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       setConversations([DEMO_CONV])
       return
     }
+    // When signed-in, immediately filter out the demo item so it never flashes
+    setConversations((prev) => prev.filter((c) => !c.is_demo && c.id !== 'conv_demo'))
     fetchConversations()
 
     // Listen to global file change events for instant file count badge updates

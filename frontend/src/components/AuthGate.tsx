@@ -11,6 +11,7 @@ import {
 
 interface AuthGateProps {
   onAuthenticated: (user: AuthUser) => void
+  onStartAuthTransition?: (title: string, subtitle: string) => void
   isOpen?: boolean
   onClose?: () => void
   isModal?: boolean
@@ -20,7 +21,7 @@ type AuthMethod = 'email' | 'phone'
 type EmailMode = 'signin' | 'signup'
 type PhoneStep = 'input_phone' | 'input_otp'
 
-export function AuthGate({ onAuthenticated, isOpen = true, onClose, isModal = false }: AuthGateProps) {
+export function AuthGate({ onAuthenticated, onStartAuthTransition, isOpen = true, onClose, isModal = false }: AuthGateProps) {
   if (isModal && !isOpen) return null
 
   const [authMethod, setAuthMethod] = useState<AuthMethod>('email')
@@ -59,8 +60,9 @@ export function AuthGate({ onAuthenticated, isOpen = true, onClose, isModal = fa
   }, [authMethod, phoneStep])
 
   const handleSuccessAuth = (u: AuthUser) => {
-    onAuthenticated(u)
+    onStartAuthTransition?.('Signing you in...', 'Preparing your personal workspace & knowledge graphs...')
     onClose?.()
+    onAuthenticated(u)
   }
 
   useEffect(() => {

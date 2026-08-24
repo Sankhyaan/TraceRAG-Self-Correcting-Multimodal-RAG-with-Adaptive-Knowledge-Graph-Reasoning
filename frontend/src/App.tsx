@@ -85,12 +85,13 @@ export default function App() {
         .then(async () => {
           const { listFiles } = await import('./api/filesApi')
           await listFiles('conv_demo').catch(() => {})
+          setFilesChangeSignal((prev) => prev + 1)
         })
         .catch((e) => console.warn('Could not load demo conversation:', e))
         .finally(() => {
           setTimeout(() => {
             setAuthTransition(null)
-          }, 500)
+          }, 800)
         })
       return
     }
@@ -117,12 +118,13 @@ export default function App() {
         // Pre-fetch files for this conversation so it renders 100% loaded
         const { listFiles } = await import('./api/filesApi')
         await listFiles(activePersonalId).catch(() => {})
+        setFilesChangeSignal((prev) => prev + 1)
       })
       .catch((e) => console.warn('Could not list conversations on load:', e))
       .finally(() => {
         setTimeout(() => {
           setAuthTransition(null)
-        }, 500)
+        }, 800)
       })
   }, [user])
 
@@ -236,12 +238,13 @@ export default function App() {
       await authSignOut()
       const { listFiles } = await import('./api/filesApi')
       await listFiles('conv_demo').catch(() => {})
+      setFilesChangeSignal((prev) => prev + 1)
     } catch (e) {
       console.warn('Sign out error', e)
     } finally {
       setTimeout(() => {
         setAuthTransition(null)
-      }, 500)
+      }, 800)
     }
   }
 
@@ -263,6 +266,9 @@ export default function App() {
         isModal={true}
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
+        onStartAuthTransition={(title, subtitle) => {
+          setAuthTransition({ title, subtitle })
+        }}
         onAuthenticated={(u) => {
           setAuthTransition({
             title: 'Signing you in...',
