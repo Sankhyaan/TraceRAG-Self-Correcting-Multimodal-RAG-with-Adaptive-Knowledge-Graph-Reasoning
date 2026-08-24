@@ -33,6 +33,8 @@ export default function App() {
 
 
 
+  const effectiveConversationId = !user ? 'conv_demo' : conversationId
+
   // Restore session on mount
   useEffect(() => {
     getCurrentUser().then((u) => {
@@ -78,22 +80,29 @@ export default function App() {
 
   // Load conversations and preload assets based on auth state
   useEffect(() => {
+    let isCancelled = false
+
     if (!user) {
-      // Guest Mode — default to the canonical VoltBus demo workspace
+      // Guest Mode — ALWAYS default to the canonical VoltBus demo workspace
       setConversationId('conv_demo')
       listConversations()
         .then(async () => {
+          if (isCancelled) return
           const { listFiles } = await import('./api/filesApi')
           await listFiles('conv_demo').catch(() => {})
-          setFilesChangeSignal((prev) => prev + 1)
+          if (!isCancelled) setFilesChangeSignal((prev) => prev + 1)
         })
         .catch((e) => console.warn('Could not load demo conversation:', e))
         .finally(() => {
-          setTimeout(() => {
-            setAuthTransition(null)
-          }, 800)
+          if (!isCancelled) {
+            setTimeout(() => {
+              setAuthTransition(null)
+            }, 1000)
+          }
         })
-      return
+      return () => {
+        isCancelled = true
+      }
     }
 
     const userStorageKey = `trace_active_conversation_${user.id}`
@@ -101,6 +110,7 @@ export default function App() {
 
     listConversations()
       .then(async (list) => {
+        if (isCancelled) return
         let activePersonalId = ''
         const personalList = (list || []).filter((c) => !c.is_demo && c.id !== 'conv_demo')
         if (personalList.length > 0) {
@@ -112,27 +122,38 @@ export default function App() {
           const newConv = await createConversation('New Conversation')
           activePersonalId = newConv.id
         }
+        if (isCancelled) return
         setConversationId(activePersonalId)
         localStorage.setItem(userStorageKey, activePersonalId)
 
         // Pre-fetch files for this conversation so it renders 100% loaded
         const { listFiles } = await import('./api/filesApi')
         await listFiles(activePersonalId).catch(() => {})
-        setFilesChangeSignal((prev) => prev + 1)
+        if (!isCancelled) {
+          setFilesChangeSignal((prev) => prev + 1)
+        }
       })
       .catch((e) => console.warn('Could not list conversations on load:', e))
       .finally(() => {
-        setTimeout(() => {
-          setAuthTransition(null)
-        }, 800)
+        if (!isCancelled) {
+          setTimeout(() => {
+            setAuthTransition(null)
+          }, 1000)
+        }
       })
+
+    return () => {
+      isCancelled = true
+    }
   }, [user])
 
   const handleSelectConversation = (id: string) => {
-    setConversationId(id)
-    if (user) {
-      localStorage.setItem(`trace_active_conversation_${user.id}`, id)
+    if (!user) {
+      setConversationId('conv_demo')
+      return
     }
+    setConversationId(id)
+    localStorage.setItem(`trace_active_conversation_${user.id}`, id)
   }
 
   const getTabTitle = () => {
@@ -361,7 +382,7 @@ export default function App() {
 
       {/* Sidebar on the Left */}
       <Sidebar
-        activeId={conversationId}
+        activeId={effectiveConversationId}
         onSelect={handleSelectConversation}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen((prev) => !prev)}
@@ -456,7 +477,7 @@ export default function App() {
                 }}
               >
                 <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 8px #38bdf8', display: 'inline-block' }} />
-                {conversationId === 'conv_demo' ? '🌟 VoltBus Demo' : conversationId}
+                {effectiveConversationId === 'conv_demo' ? '🌟 VoltBus Demo' : effectiveConversationId}
               </span>
             </div>
 
@@ -728,25 +749,25 @@ export default function App() {
         {/* Workspace Body - Fluid Expansive Container with full vertical scrolling */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflowY: 'auto', padding: activeTab === 'chat' ? '0.75rem 1.25rem 1rem' : '1.25rem 1.5rem', width: '100%' }}>
           <div style={{ display: activeTab === 'chat' ? 'flex' : 'none', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-            <ChatSynthesisView conversationId={conversationId} clearSignal={clearSignal} />
+            <ChatSynthesisView conversationId={effectiveConversationId} clearSignal={clearSignal} />
           </div>
           <div style={{ display: activeTab === 'files' ? 'flex' : 'none', flexDirection: 'column', flex: 1, minHeight: 0 }}>
             <FileManager
-              conversationId={conversationId}
+              conversationId={effectiveConversationId}
               isGuest={!user}
               onOpenAuth={() => setShowAuthModal(true)}
               onFilesChanged={() => setFilesChangeSignal((prev) => prev + 1)}
               onFileCountChange={(count) =>
-                setFileCounts((prev) => ({ ...prev, [conversationId]: count }))
+                setFileCounts((prev) => ({ ...prev, [effectiveConversationId]: count }))
               }
               onNavigateTab={(tab) => setActiveTab(tab)}
             />
           </div>
           <div style={{ display: activeTab === 'retrieval' ? 'flex' : 'none', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-            <RetrievalTester conversationId={conversationId} />
+            <RetrievalTester conversationId={effectiveConversationId} />
           </div>
           <div style={{ display: activeTab === 'graph' ? 'flex' : 'none', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-            <KnowledgeGraphViewer conversationId={conversationId} />
+            <KnowledgeGraphViewer conversationId={effectiveConversationId} />
           </div>
         </div>
       </div>
