@@ -119,16 +119,34 @@ async def upload_files(
     }
 
 
+DEMO_CONV_ID = "conv_demo"
+EMPTY_FILES_RESPONSE = {
+    "conversation_id": DEMO_CONV_ID,
+    "files": [],
+    "total": 0,
+    "by_type": {"document": 0, "image": 0, "audio": 0, "video": 0},
+}
+
+
 @router.get("")
 def list_files(
     conversation_id: str = Query(..., description="Conversation ID to filter files for"),
     file_type: Optional[str] = Query(None, description="Optional filter: document, image, audio, video"),
+    user_id: Optional[str] = Depends(get_current_user_id),
 ):
     """
     Lists all files for a conversation, optionally filtered by media type.
-    Includes extraction status and type aggregate counts.
+    Authenticated users NEVER receive conv_demo files — that workspace is for guests only.
     """
     try:
+        # Hard wall: authenticated users cannot see conv_demo files under any circumstance
+        if user_id and conversation_id == DEMO_CONV_ID:
+            return {**EMPTY_FILES_RESPONSE, "conversation_id": conversation_id}
+
+        # Empty string conversation ID → return empty
+        if not conversation_id:
+            return {"conversation_id": "", "files": [], "total": 0, "by_type": {"document": 0, "image": 0, "audio": 0, "video": 0}}
+
         all_files = storage_service.list_files(conversation_id=conversation_id)
 
         # Normalize status if status column not populated
@@ -156,7 +174,6 @@ def list_files(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.get("/{file_id}/extracted")
 def get_extracted_content(file_id: str):
