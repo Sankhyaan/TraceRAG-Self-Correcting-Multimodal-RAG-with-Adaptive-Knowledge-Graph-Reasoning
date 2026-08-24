@@ -21,7 +21,8 @@ export const FileManager: React.FC<FileManagerProps> = ({
 }) => {
 
 
-  const initialCache = getCachedFiles(conversationId, 'all')
+  const isDemoBlocked = (!isGuest && conversationId === 'conv_demo') || !conversationId
+  const initialCache = isDemoBlocked ? null : getCachedFiles(conversationId, 'all')
   const [files, setFiles] = useState<FileItem[]>(() => initialCache?.files || [])
   const [counts, setCounts] = useState(() => initialCache?.by_type || { document: 0, image: 0, audio: 0, video: 0 })
   const [filterType, setFilterType] = useState<string>('all')

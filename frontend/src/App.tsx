@@ -10,18 +10,34 @@ import { listConversations, invalidateConversationsCache } from './api/conversat
 import { type AuthUser, signOut as authSignOut, getCurrentUser, onAuthStateChange, getInitialAuthUser } from './api/authApi'
 
 export default function App() {
+  const isOAuthCallback = typeof window !== 'undefined' && (
+    window.location.hash.includes('access_token=') ||
+    window.location.hash.includes('type=') ||
+    window.location.search.includes('code=')
+  )
+
   const initialUser = getInitialAuthUser()
   const [user, setUser] = useState<AuthUser | null>(initialUser)
   const [authLoading, setAuthLoading] = useState(false)
   const [authTransition, setAuthTransition] = useState<{
     title: string
     subtitle: string
-  } | null>(null)
+  } | null>(() => {
+    if (isOAuthCallback) {
+      return {
+        title: 'Signing you in...',
+        subtitle: 'Preparing your personal workspace & knowledge graphs...',
+      }
+    }
+    return null
+  })
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [conversationId, setConversationId] = useState<string>(() => {
+    if (isOAuthCallback) return ''
     if (initialUser) {
       const saved = localStorage.getItem(`trace_active_conversation_${initialUser.id}`)
       if (saved && saved !== 'conv_demo') return saved
+      return ''
     }
     return 'conv_demo'
   })
@@ -31,9 +47,11 @@ export default function App() {
   const [filesChangeSignal, setFilesChangeSignal] = useState(0)
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({})
 
-
-
-  const effectiveConversationId = !user ? 'conv_demo' : (conversationId === 'conv_demo' ? '' : conversationId)
+  const isAuthenticating = isOAuthCallback || (authTransition !== null && authTransition.title.includes('Signing you in'))
+  const effectiveConversationId = isAuthenticating
+    ? (conversationId === 'conv_demo' ? '' : conversationId)
+    : (!user ? 'conv_demo' : (conversationId === 'conv_demo' ? '' : conversationId))
+  const isGuestWorkspace = !user && !isAuthenticating
 
   // Restore session on mount
   useEffect(() => {
@@ -775,7 +793,7 @@ export default function App() {
           <div style={{ display: activeTab === 'files' ? 'flex' : 'none', flexDirection: 'column', flex: 1, minHeight: 0 }}>
             <FileManager
               conversationId={effectiveConversationId}
-              isGuest={!user}
+              isGuest={isGuestWorkspace}
               onOpenAuth={() => setShowAuthModal(true)}
               onFilesChanged={() => setFilesChangeSignal((prev) => prev + 1)}
               onFileCountChange={(count) =>
