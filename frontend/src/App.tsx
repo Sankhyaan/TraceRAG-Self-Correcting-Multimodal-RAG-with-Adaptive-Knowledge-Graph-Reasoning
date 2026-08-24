@@ -51,8 +51,17 @@ export default function App() {
       setAuthLoading(false)
     })
     const unsub = onAuthStateChange((u, _session, event) => {
-      // Background events (TOKEN_REFRESHED, INITIAL_SESSION, tab switch) must NEVER trigger the full-screen loader
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_IN' && u) {
+        setAuthTransition({
+          title: 'Signing you in...',
+          subtitle: 'Preparing your personal workspace & knowledge graphs...',
+        })
+        setUser(u)
+      } else if (event === 'SIGNED_OUT') {
+        setAuthTransition({
+          title: 'Signing you out...',
+          subtitle: 'Restoring Guest Demo workspace...',
+        })
         invalidateConversationsCache()
         setConversationId('conv_demo')
         setUser(null)
@@ -91,6 +100,17 @@ export default function App() {
         isCancelled = true
       }
     }
+
+    // Set transition screen on sign-in if not already active
+    setAuthTransition((prev) =>
+      prev ?? {
+        title: 'Signing you in...',
+        subtitle: 'Preparing your personal workspace & knowledge graphs...',
+      }
+    )
+
+    // Clear stale in-memory files cache on user switch
+    import('./api/filesApi').then(({ clearFilesCache }) => clearFilesCache())
 
     const userStorageKey = `trace_active_conversation_${user.id}`
     const saved = localStorage.getItem(userStorageKey)

@@ -78,6 +78,9 @@ export const FileManager: React.FC<FileManagerProps> = ({
       onFileCountChange?.(cached.total)
       loadFiles(true) // Silent background refresh
     } else {
+      setFiles([])
+      setCounts({ document: 0, image: 0, audio: 0, video: 0 })
+      onFileCountChange?.(0)
       loadFiles(false)
     }
   }, [conversationId, filterType])
