@@ -54,12 +54,16 @@ export default function App() {
     })
     const unsub = onAuthStateChange((u, _session, event) => {
       if (event === 'SIGNED_IN' && u) {
+        // 1. Show the transition overlay immediately
         setAuthTransition({
           title: 'Signing you in...',
           subtitle: 'Preparing your personal workspace & knowledge graphs...',
         })
-        const saved = localStorage.getItem(`trace_active_conversation_${u.id}`)
-        setConversationId(saved && saved !== 'conv_demo' ? saved : '')
+        // 2. Wipe ALL stale state immediately — conversation ID, cache, localStorage
+        invalidateConversationsCache()
+        localStorage.removeItem(`trace_active_conversation_${u.id}`)
+        setConversationId('')
+        // 3. Update user (triggers useEffect[user] to fetch fresh conversation from backend)
         setUser(u)
       } else if (event === 'SIGNED_OUT') {
         setAuthTransition({
