@@ -166,7 +166,6 @@ export default function App() {
   const [clearingWorkspace, setClearingWorkspace] = useState(false)
 
   // Intercept keyboard refresh in Guest Mode to show our custom styled warning modal
-  // and handle browser URL bar reload icon with confirmation
   useEffect(() => {
     if (!user && !authLoading) {
       const handleKeyDown = (e: KeyboardEvent) => {
@@ -175,15 +174,9 @@ export default function App() {
           setShowGuestRefreshModal(true)
         }
       }
-      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-        e.preventDefault()
-        e.returnValue = ''
-      }
       window.addEventListener('keydown', handleKeyDown)
-      window.addEventListener('beforeunload', handleBeforeUnload)
       return () => {
         window.removeEventListener('keydown', handleKeyDown)
-        window.removeEventListener('beforeunload', handleBeforeUnload)
       }
     }
   }, [user, authLoading])
