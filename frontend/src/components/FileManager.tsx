@@ -246,23 +246,30 @@ export const FileManager: React.FC<FileManagerProps> = ({
     }
   }
 
-  // Distinguishable status badges - Extracting is Luminous Cyan/Teal
+  // Distinguishable status badges - sleek modern micro-pills with glowing status dots
   const getStatusBadge = (file: FileItem) => {
     const isRetrying = retryingIds.has(file.id)
 
     if (isRetrying || file.status === 'processing' || file.status === 'pending') {
       return (
         <span
-          className="badge"
           style={{
-            background: 'rgba(45, 212, 191, 0.18)',
-            color: '#2dd4bf',
-            border: '1px solid rgba(45, 212, 191, 0.4)',
-            animation: 'pulse 1.5s infinite',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.3rem',
+            background: 'rgba(6, 182, 212, 0.12)',
+            color: '#38bdf8',
+            border: '1px solid rgba(6, 182, 212, 0.35)',
+            borderRadius: '999px',
+            padding: '0.18rem 0.52rem',
+            fontSize: '0.69rem',
             fontWeight: 600,
+            lineHeight: 1,
+            animation: 'pulse 1.5s infinite',
           }}
         >
-          ⏳ {isRetrying ? 'Retrying...' : 'Extracting...'}
+          <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#38bdf8', display: 'inline-block' }} />
+          <span>{isRetrying ? 'Retrying...' : 'Extracting...'}</span>
         </span>
       )
     }
@@ -270,15 +277,22 @@ export const FileManager: React.FC<FileManagerProps> = ({
       return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
           <span
-            className="badge"
             style={{
-              background: 'rgba(239, 68, 68, 0.15)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+              background: 'rgba(239, 68, 68, 0.12)',
               color: '#f87171',
-              border: '1px solid rgba(239, 68, 68, 0.35)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              borderRadius: '999px',
+              padding: '0.18rem 0.52rem',
+              fontSize: '0.69rem',
               fontWeight: 600,
+              lineHeight: 1,
             }}
           >
-            ⚠️ Failed
+            <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />
+            <span>Failed</span>
           </span>
           <button
             onClick={(e) => {
@@ -290,9 +304,9 @@ export const FileManager: React.FC<FileManagerProps> = ({
               background: 'rgba(239, 68, 68, 0.2)',
               border: '1px solid rgba(239, 68, 68, 0.4)',
               color: '#fff',
-              borderRadius: '4px',
+              borderRadius: '6px',
               padding: '0.15rem 0.45rem',
-              fontSize: '0.7rem',
+              fontSize: '0.68rem',
               fontWeight: 600,
               cursor: 'pointer',
             }}
@@ -305,15 +319,23 @@ export const FileManager: React.FC<FileManagerProps> = ({
     if (file.status === 'done' || file.extracted_text) {
       return (
         <span
-          className="badge"
           style={{
-            background: 'rgba(16, 185, 129, 0.15)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.32rem',
+            background: 'rgba(16, 185, 129, 0.12)',
             color: '#34d399',
-            border: '1px solid rgba(16, 185, 129, 0.35)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            borderRadius: '999px',
+            padding: '0.18rem 0.52rem',
+            fontSize: '0.69rem',
             fontWeight: 600,
+            lineHeight: 1,
+            boxShadow: '0 0 8px rgba(16, 185, 129, 0.12)',
           }}
         >
-          ✓ Extracted
+          <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#10b981', display: 'inline-block', boxShadow: '0 0 6px #10b981' }} />
+          <span>Extracted</span>
         </span>
       )
     }
@@ -733,14 +755,19 @@ export const FileManager: React.FC<FileManagerProps> = ({
                           background: style.bg,
                           color: style.text,
                           border: `1px solid ${style.border}`,
-                          borderRadius: '6px',
-                          padding: '0.2rem 0.5rem',
-                          fontSize: '0.72rem',
+                          borderRadius: '999px',
+                          padding: '0.18rem 0.52rem',
+                          fontSize: '0.69rem',
                           fontWeight: 600,
-                          textTransform: 'uppercase',
+                          textTransform: 'capitalize',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          lineHeight: 1,
                         }}
                       >
-                        {style.icon} {file.file_type}
+                        <span>{style.icon}</span>
+                        <span>{file.file_type}</span>
                       </span>
                       {statusBadge}
                     </div>
