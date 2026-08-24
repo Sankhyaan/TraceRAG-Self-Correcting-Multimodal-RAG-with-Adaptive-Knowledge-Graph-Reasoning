@@ -13,7 +13,10 @@ export default function App() {
   const initialUser = getInitialAuthUser()
   const [user, setUser] = useState<AuthUser | null>(initialUser)
   const [authLoading, setAuthLoading] = useState(false)
-  const [isSigningIn, setIsSigningIn] = useState(false)
+  const [authTransition, setAuthTransition] = useState<{
+    title: string
+    subtitle: string
+  } | null>(null)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [conversationId, setConversationId] = useState<string>(() => {
     if (initialUser) {
@@ -68,7 +71,6 @@ export default function App() {
       // Guest Mode — default to the canonical VoltBus demo workspace
       setConversationId('conv_demo')
       listConversations().catch((e) => console.warn('Could not load demo conversation:', e))
-      setIsSigningIn(false)
       return
     }
 
@@ -93,7 +95,7 @@ export default function App() {
       })
       .catch((e) => console.warn('Could not list conversations on load:', e))
       .finally(() => {
-        setIsSigningIn(false)
+        setAuthTransition(null)
       })
   }, [user])
 
@@ -203,10 +205,22 @@ export default function App() {
   }
 
   const handleSignOut = async () => {
+    setAuthTransition({
+      title: 'Signing you out...',
+      subtitle: 'Switching to Guest Demo workspace...',
+    })
     invalidateConversationsCache()
     setConversationId('conv_demo')
     setUser(null)
-    await authSignOut()
+    try {
+      await authSignOut()
+    } catch (e) {
+      console.warn('Sign out error', e)
+    } finally {
+      setTimeout(() => {
+        setAuthTransition(null)
+      }, 400)
+    }
   }
 
   // Show full-page loader while restoring session on initial load
@@ -228,14 +242,17 @@ export default function App() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onAuthenticated={(u) => {
-          setIsSigningIn(true)
+          setAuthTransition({
+            title: 'Signing you in...',
+            subtitle: 'Preparing your personal workspace & knowledge graphs...',
+          })
           setUser(u)
           setShowAuthModal(false)
         }}
       />
 
-      {/* Signing In / Workspace Preparation Buffer Overlay */}
-      {isSigningIn && (
+      {/* Auth Transition Buffer Overlay (Sign In & Sign Out) */}
+      {authTransition && (
         <div
           style={{
             position: 'fixed',
@@ -305,10 +322,10 @@ export default function App() {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Signing you in...
+              {authTransition.title}
             </h3>
             <p style={{ fontSize: '0.84rem', color: '#94a3b8', margin: 0 }}>
-              Preparing your personal workspace & knowledge graphs...
+              {authTransition.subtitle}
             </p>
           </div>
         </div>
