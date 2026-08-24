@@ -216,16 +216,22 @@ export default function App() {
   const confirmClearWorkspace = async () => {
     setClearingWorkspace(true)
     try {
+      const oldConvId = conversationId
       const { deleteConversation, createConversation } = await import('./api/conversationsApi')
-      // Delete current workspace (cascading delete of files, messages, graph, vectors)
-      await deleteConversation(conversationId)
-      // Open a new clean workspace
+      // 1. Delete current workspace (cascading delete of files, messages, graph, vectors, and cache)
+      await deleteConversation(oldConvId)
+      // 2. Open a new clean workspace
       const newConv = await createConversation('New Conversation')
       setConversationId(newConv.id)
       if (user) {
         localStorage.setItem(`trace_active_conversation_${user.id}`, newConv.id)
       }
       setFilesChangeSignal((prev) => prev + 1)
+      window.dispatchEvent(
+        new CustomEvent('trace_files_changed', {
+          detail: { conversationId: newConv.id, count: 0, action: 'sync' },
+        })
+      )
       setShowClearWorkspaceModal(false)
     } catch (err) {
       console.error('Failed to clear workspace:', err)

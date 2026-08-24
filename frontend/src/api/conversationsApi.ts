@@ -121,6 +121,9 @@ export async function renameConversation(id: string, title: string): Promise<voi
 }
 
 export async function deleteConversation(id: string): Promise<void> {
+  const current = getCachedConversations() || []
+  setCachedConversations(current.filter((c) => c.id !== id))
+  invalidateMessagesCache(id)
   const res = await apiFetch(`${API_BASE}/conversations/${id}`, {
     method: 'DELETE',
   })
