@@ -33,7 +33,7 @@ export default function App() {
 
 
 
-  const effectiveConversationId = !user ? 'conv_demo' : conversationId
+  const effectiveConversationId = !user ? 'conv_demo' : (conversationId === 'conv_demo' ? '' : conversationId)
 
   // Restore session on mount
   useEffect(() => {
@@ -46,6 +46,8 @@ export default function App() {
         const saved = localStorage.getItem(`trace_active_conversation_${u.id}`)
         if (saved && saved !== 'conv_demo') {
           setConversationId(saved)
+        } else {
+          setConversationId('')
         }
       }
       setAuthLoading(false)
@@ -56,6 +58,8 @@ export default function App() {
           title: 'Signing you in...',
           subtitle: 'Preparing your personal workspace & knowledge graphs...',
         })
+        const saved = localStorage.getItem(`trace_active_conversation_${u.id}`)
+        setConversationId(saved && saved !== 'conv_demo' ? saved : '')
         setUser(u)
       } else if (event === 'SIGNED_OUT') {
         setAuthTransition({
@@ -308,6 +312,8 @@ export default function App() {
             title: 'Signing you in...',
             subtitle: 'Preparing your personal workspace & knowledge graphs...',
           })
+          const saved = localStorage.getItem(`trace_active_conversation_${u.id}`)
+          setConversationId(saved && saved !== 'conv_demo' ? saved : '')
           setUser(u)
           setShowAuthModal(false)
         }}

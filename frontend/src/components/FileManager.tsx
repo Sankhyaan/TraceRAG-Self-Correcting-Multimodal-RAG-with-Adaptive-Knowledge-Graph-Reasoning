@@ -51,9 +51,11 @@ export const FileManager: React.FC<FileManagerProps> = ({
   }
 
   const loadFiles = async (silent: boolean = false) => {
-    if (!conversationId) {
+    if (!conversationId || (!isGuest && conversationId === 'conv_demo')) {
       if (!silent) setLoading(false)
       setFiles([])
+      setCounts({ document: 0, image: 0, audio: 0, video: 0 })
+      onFileCountChange?.(0)
       return
     }
     if (!silent) setLoading(true)
@@ -71,6 +73,12 @@ export const FileManager: React.FC<FileManagerProps> = ({
   }
 
   useEffect(() => {
+    if (!conversationId || (!isGuest && conversationId === 'conv_demo')) {
+      setFiles([])
+      setCounts({ document: 0, image: 0, audio: 0, video: 0 })
+      onFileCountChange?.(0)
+      return
+    }
     const cached = getCachedFiles(conversationId, filterType)
     if (cached) {
       setFiles(cached.files)
@@ -83,7 +91,7 @@ export const FileManager: React.FC<FileManagerProps> = ({
       onFileCountChange?.(0)
       loadFiles(false)
     }
-  }, [conversationId, filterType])
+  }, [conversationId, filterType, isGuest])
 
   // Auto-poll only when files are actively extracting; 6s is frequent enough without flooding
   useEffect(() => {
