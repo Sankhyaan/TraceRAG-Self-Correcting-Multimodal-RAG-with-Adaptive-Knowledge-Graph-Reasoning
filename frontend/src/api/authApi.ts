@@ -14,6 +14,53 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 export interface AuthUser {
   id: string
   email: string
+  is_guest?: boolean
+}
+
+export interface GuestSession {
+  user: AuthUser
+  conversationId: string
+  createdAt: number
+}
+
+const GUEST_SESSION_KEY = 'trace_guest_session'
+
+export function startGuestSession(): GuestSession {
+  const guestId = 'guest_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36).slice(-4)
+  const conversationId = `conv_${guestId}`
+  const guestUser: AuthUser = {
+    id: guestId,
+    email: 'guest.sandbox@trace.local',
+    is_guest: true,
+  }
+  const session: GuestSession = {
+    user: guestUser,
+    conversationId,
+    createdAt: Date.now(),
+  }
+  try {
+    localStorage.setItem(GUEST_SESSION_KEY, JSON.stringify(session))
+  } catch (e) {}
+  return session
+}
+
+export function getGuestSession(): GuestSession | null {
+  try {
+    const raw = localStorage.getItem(GUEST_SESSION_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (parsed?.user?.id && parsed?.conversationId) {
+        return parsed
+      }
+    }
+  } catch (e) {}
+  return null
+}
+
+export function endGuestSession(): void {
+  try {
+    localStorage.removeItem(GUEST_SESSION_KEY)
+  } catch (e) {}
 }
 
 export interface AuthResult {
@@ -54,6 +101,7 @@ export function invalidateTokenCache() {
 /** Sign out the current user */
 export async function signOut(): Promise<{ error: AuthError | null }> {
   invalidateTokenCache()
+  endGuestSession()
   const { error } = await supabase.auth.signOut()
   return { error: error as AuthError | null }
 }
@@ -100,6 +148,10 @@ export async function verifyPhoneOtp(phone: string, token: string): Promise<Auth
 
 /** Synchronously read the persisted Supabase session from localStorage to prevent initial render flicker */
 export function getInitialAuthUser(): AuthUser | null {
+  const guestSess = getGuestSession()
+  if (guestSess) {
+    return guestSess.user
+  }
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i)
@@ -122,6 +174,10 @@ export function getInitialAuthUser(): AuthUser | null {
 
 /** Get the currently active user (from persisted session) */
 export async function getCurrentUser(): Promise<AuthUser | null> {
+  const guestSess = getGuestSession()
+  if (guestSess) {
+    return guestSess.user
+  }
   const {
     data: { user },
   } = await supabase.auth.getUser()

@@ -12,6 +12,7 @@ import {
 interface AuthGateProps {
   onAuthenticated: (user: AuthUser) => void
   onStartAuthTransition?: (title: string, subtitle: string) => void
+  onStartGuestSession?: () => void
   isOpen?: boolean
   onClose?: () => void
   isModal?: boolean
@@ -21,7 +22,7 @@ type AuthMethod = 'email' | 'phone'
 type EmailMode = 'signin' | 'signup'
 type PhoneStep = 'input_phone' | 'input_otp'
 
-export function AuthGate({ onAuthenticated, onStartAuthTransition, isOpen = true, onClose, isModal = false }: AuthGateProps) {
+export function AuthGate({ onAuthenticated, onStartAuthTransition, onStartGuestSession, isOpen = true, onClose, isModal = false }: AuthGateProps) {
   if (isModal && !isOpen) return null
 
   const [authMethod, setAuthMethod] = useState<AuthMethod>('email')
@@ -769,6 +770,61 @@ export function AuthGate({ onAuthenticated, onStartAuthTransition, isOpen = true
           )}
           {googleLoading ? 'Redirecting...' : 'Sign in with Google'}
         </button>
+
+        {/* Guest Sandbox Mode Option */}
+        {onStartGuestSession && (
+          <div style={{ marginTop: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.85rem' }}>
+              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+              <span style={{ color: '#64748b', fontSize: '0.74rem', whiteSpace: 'nowrap' }}>or explore without an account</span>
+              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+            </div>
+
+            <button
+              id="guest-sandbox-btn"
+              type="button"
+              onClick={() => {
+                onClose?.()
+                onStartGuestSession()
+              }}
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                borderRadius: '14px',
+                border: '1px solid rgba(245, 158, 11, 0.45)',
+                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(217, 119, 6, 0.22) 100%)',
+                color: '#fef3c7',
+                fontWeight: 700,
+                fontSize: '0.88rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.65rem',
+                boxShadow: '0 4px 18px rgba(245, 158, 11, 0.18)',
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 6px 24px rgba(245, 158, 11, 0.35)'
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.35) 100%)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'none'
+                e.currentTarget.style.boxShadow = '0 4px 18px rgba(245, 158, 11, 0.18)'
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(217, 119, 6, 0.22) 100%)'
+              }}
+            >
+              <span style={{ fontSize: '1.1rem' }}>🎭</span>
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>Enter as Guest (Sandbox Mode)</div>
+                <div style={{ fontSize: '0.7rem', color: '#fde68a', fontWeight: 400 }}>
+                  Upload your own files • Persists on refresh • Wiped when you leave
+                </div>
+              </div>
+            </button>
+          </div>
+        )}
 
         <p style={{ textAlign: 'center', color: '#475569', fontSize: '0.76rem', marginTop: '1.25rem', lineHeight: 1.5 }}>
           By continuing you agree to our{' '}

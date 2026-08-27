@@ -5,9 +5,19 @@ import { RetrievalTester } from './components/RetrievalTester'
 import { KnowledgeGraphViewer } from './components/KnowledgeGraphViewer'
 import { ChatSynthesisView } from './components/ChatSynthesisView'
 import { AuthGate } from './components/AuthGate'
-import { listConversations, invalidateConversationsCache } from './api/conversationsApi'
+import { listConversations, invalidateConversationsCache, deleteConversation } from './api/conversationsApi'
+import { clearConversationFiles } from './api/filesApi'
 
-import { type AuthUser, signOut as authSignOut, getCurrentUser, onAuthStateChange, getInitialAuthUser } from './api/authApi'
+import {
+  type AuthUser,
+  signOut as authSignOut,
+  getCurrentUser,
+  onAuthStateChange,
+  getInitialAuthUser,
+  startGuestSession,
+  getGuestSession,
+  endGuestSession,
+} from './api/authApi'
 
 export default function App() {
   const isOAuthCallback = typeof window !== 'undefined' && (
@@ -16,6 +26,7 @@ export default function App() {
     window.location.search.includes('code=')
   )
 
+  const initialGuest = getGuestSession()
   const initialUser = getInitialAuthUser()
   const [user, setUser] = useState<AuthUser | null>(initialUser)
   const currentUserRef = useRef<string | null>(initialUser?.id ?? null)
@@ -36,6 +47,9 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [conversationId, setConversationId] = useState<string>(() => {
     if (isOAuthCallback) return ''
+    if (initialGuest) {
+      return initialGuest.conversationId
+    }
     if (initialUser) {
       const saved = localStorage.getItem(`trace_active_conversation_${initialUser.id}`)
       if (saved && saved !== 'conv_demo') return saved
@@ -50,10 +64,11 @@ export default function App() {
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({})
 
   const isAuthenticating = isOAuthCallback || (authTransition !== null && authTransition.title.includes('Signing you in'))
+  const isGuestSandbox = Boolean(user?.is_guest)
+  const isGuestWorkspace = !user && !isAuthenticating && !isGuestSandbox
   const effectiveConversationId = isAuthenticating
     ? (conversationId === 'conv_demo' ? '' : conversationId)
     : (!user ? 'conv_demo' : (conversationId === 'conv_demo' ? '' : conversationId))
-  const isGuestWorkspace = !user && !isAuthenticating
 
   // Keep ref synchronized with state
   useEffect(() => {
@@ -307,7 +322,50 @@ export default function App() {
     }
   }
 
+  const handleStartGuestSandbox = () => {
+    const session = startGuestSession()
+    setAuthTransition({
+      title: 'Starting Guest Sandbox...',
+      subtitle: 'Setting up temporary workspace & storage for your custom files...',
+    })
+    setUser(session.user)
+    currentUserRef.current = session.user.id
+    setConversationId(session.conversationId)
+    setActiveTab('files')
+    setShowAuthModal(false)
+  }
+
+  const handleEndGuestSession = async () => {
+    const guestConvId = conversationId
+    setAuthTransition({
+      title: 'Ending Guest Sandbox...',
+      subtitle: 'Wiping temporary files, vectors, and knowledge graphs...',
+    })
+
+    // Wipe all guest files from server
+    if (guestConvId && guestConvId.startsWith('conv_guest_')) {
+      try {
+        await clearConversationFiles(guestConvId).catch(() => {})
+        await deleteConversation(guestConvId).catch(() => {})
+      } catch (e) {
+        console.warn('Notice clearing guest session files:', e)
+      }
+    }
+
+    endGuestSession()
+    setUser(null)
+    currentUserRef.current = null
+    invalidateConversationsCache()
+    setConversationId('conv_demo')
+    setActiveTab('files')
+    setFilesChangeSignal((prev) => prev + 1)
+  }
+
   const handleSignOut = async () => {
+    if (user?.is_guest) {
+      await handleEndGuestSession()
+      return
+    }
     setAuthTransition({
       title: 'Signing you out...',
       subtitle: 'Restoring Guest Demo workspace...',
@@ -350,7 +408,9 @@ export default function App() {
         onStartAuthTransition={(title, subtitle) => {
           setAuthTransition({ title, subtitle })
         }}
+        onStartGuestSession={handleStartGuestSandbox}
         onAuthenticated={(u) => {
+          endGuestSession()
           setAuthTransition({
             title: 'Signing you in...',
             subtitle: 'Preparing your personal workspace & knowledge graphs...',
@@ -450,8 +510,11 @@ export default function App() {
         onToggle={() => setSidebarOpen((prev) => !prev)}
         refreshSignal={filesChangeSignal}
         fileCountOverride={fileCounts}
-        isGuest={!user}
+        isGuest={isGuestWorkspace}
+        isGuestSandbox={isGuestSandbox}
         onOpenAuth={() => setShowAuthModal(true)}
+        onStartGuestSandbox={handleStartGuestSandbox}
+        onEndGuestSession={handleEndGuestSession}
       />
 
       {/* Main Content Area on the Right */}
@@ -562,7 +625,7 @@ export default function App() {
                   }}
                 >
                   <span>👤</span>
-                  <span>Guest Mode</span>
+                  <span>Demo Mode</span>
                 </span>
 
                 <button
@@ -599,8 +662,41 @@ export default function App() {
                 </button>
 
                 <button
-                  id="sign-in-cta-btn"
+                  id="guest-sandbox-header-btn"
+                  onClick={handleStartGuestSandbox}
+                  title="Upload your own documents and test without signing in"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.3) 100%)',
+                    border: '1px solid rgba(245, 158, 11, 0.45)',
+                    borderRadius: '8px',
+                    color: '#fef3c7',
+                    padding: '0.38rem 0.85rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    boxShadow: '0 2px 10px rgba(245, 158, 11, 0.2)',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-1px)'
+                    e.currentTarget.style.boxShadow = '0 4px 14px rgba(245, 158, 11, 0.35)'
+                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(217, 119, 6, 0.45) 100%)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'none'
+                    e.currentTarget.style.boxShadow = '0 2px 10px rgba(245, 158, 11, 0.2)'
+                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.3) 100%)'
+                  }}
+                >
+                  <span>🎭</span>
+                  <span>Try Guest Sandbox</span>
+                </button>
 
+                <button
+                  id="sign-in-cta-btn"
                   onClick={() => setShowAuthModal(true)}
                   style={{
                     background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
@@ -630,8 +726,75 @@ export default function App() {
                   <span>Sign In / Sign Up</span>
                 </button>
               </>
+            ) : isGuestSandbox ? (
+              <>
+                <span
+                  title="Guest Sandbox Session"
+                  style={{
+                    fontSize: '0.78rem',
+                    color: '#fef3c7',
+                    background: 'rgba(245, 158, 11, 0.15)',
+                    border: '1px solid rgba(245, 158, 11, 0.35)',
+                    borderRadius: '6px',
+                    padding: '0.2rem 0.55rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  🎭 Guest Sandbox
+                </span>
 
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  style={{
+                    background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#fff',
+                    padding: '0.35rem 0.75rem',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    boxShadow: '0 2px 8px rgba(99, 102, 241, 0.4)',
+                  }}
+                >
+                  <span>✨</span>
+                  <span>Sign In to Save</span>
+                </button>
 
+                <button
+                  id="end-guest-session-btn"
+                  onClick={handleEndGuestSession}
+                  title="Wipe temporary files and return to demo"
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.12)',
+                    border: '1px solid rgba(239, 68, 68, 0.35)',
+                    borderRadius: '8px',
+                    color: '#fca5a5',
+                    padding: '0.35rem 0.75rem',
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.25)'
+                    e.currentTarget.style.color = '#fff'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.12)'
+                    e.currentTarget.style.color = '#fca5a5'
+                  }}
+                >
+                  <span>🗑️</span>
+                  <span>End Guest Session</span>
+                </button>
+              </>
             ) : (
               <>
                 {/* User email badge */}
@@ -727,6 +890,63 @@ export default function App() {
             )}
           </div>
         </header>
+
+        {/* Guest Sandbox Mode Top Banner */}
+        {isGuestSandbox && (
+          <div
+            style={{
+              background: 'linear-gradient(90deg, rgba(245, 158, 11, 0.16) 0%, rgba(217, 119, 6, 0.22) 50%, rgba(245, 158, 11, 0.16) 100%)',
+              borderBottom: '1px solid rgba(245, 158, 11, 0.35)',
+              padding: '0.45rem 1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '0.75rem',
+              boxShadow: '0 2px 10px rgba(245, 158, 11, 0.1)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#fef3c7' }}>
+              <span style={{ fontSize: '0.95rem' }}>🎭</span>
+              <span style={{ fontWeight: 700, color: '#fde68a' }}>Guest Sandbox Mode:</span>
+              <span style={{ color: '#fed7aa' }}>
+                Upload files, chat, and test knowledge graphs freely. Your workspace persists across page refresh and is wiped clean when you leave.
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <button
+                onClick={() => setShowAuthModal(true)}
+                style={{
+                  background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '0.25rem 0.65rem',
+                  fontSize: '0.74rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                💾 Sign Up to Save
+              </button>
+              <button
+                onClick={handleEndGuestSession}
+                style={{
+                  background: 'rgba(239, 68, 68, 0.2)',
+                  color: '#fca5a5',
+                  border: '1px solid rgba(239, 68, 68, 0.4)',
+                  borderRadius: '6px',
+                  padding: '0.25rem 0.65rem',
+                  fontSize: '0.74rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                🗑️ End Session
+              </button>
+            </div>
+          </div>
+        )}
 
 
 

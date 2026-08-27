@@ -9,7 +9,10 @@ interface SidebarProps {
   refreshSignal?: number
   fileCountOverride?: Record<string, number>
   isGuest?: boolean
+  isGuestSandbox?: boolean
   onOpenAuth?: () => void
+  onStartGuestSandbox?: () => void
+  onEndGuestSession?: () => void
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -20,7 +23,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   refreshSignal,
   fileCountOverride,
   isGuest = false,
+  isGuestSandbox = false,
   onOpenAuth,
+  onStartGuestSandbox,
+  onEndGuestSession,
 }) => {
 
   // Seed state instantly from cache so sidebar never shows blank
@@ -29,8 +35,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [editTitle, setEditTitle] = useState('')
   const [convToDelete, setConvToDelete] = useState<{ id: string; title: string } | null>(null)
 
+  const DEMO_CONV: Conversation = {
+    id: 'conv_demo',
+    title: 'VoltBus Engineering & Route 101 Operations',
+    file_count: 5,
+    message_count: 5,
+    is_demo: true,
+  }
+
   const fetchConversations = async () => {
     try {
+      if (isGuestSandbox) {
+        setConversations([{
+          id: activeId,
+          title: '🎭 Guest Sandbox Workspace',
+          file_count: fileCountOverride?.[activeId] ?? 0,
+          message_count: 0,
+          is_demo: false,
+        }])
+        return
+      }
       const list = await listConversations()
       if (isGuest) {
         setConversations([DEMO_CONV])
@@ -42,15 +66,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   }
 
-  const DEMO_CONV: Conversation = {
-    id: 'conv_demo',
-    title: 'VoltBus Engineering & Route 101 Operations',
-    file_count: 5,
-    message_count: 5,
-    is_demo: true,
-  }
-
   useEffect(() => {
+    if (isGuestSandbox) {
+      setConversations([{
+        id: activeId,
+        title: '🎭 Guest Sandbox Workspace',
+        file_count: fileCountOverride?.[activeId] ?? 0,
+        message_count: 0,
+        is_demo: false,
+      }])
+      return
+    }
     if (isGuest) {
       setConversations([DEMO_CONV])
       return
@@ -237,6 +263,44 @@ export const Sidebar: React.FC<SidebarProps> = ({
               ◀
             </button>
           </div>
+
+          {/* In Guest Demo: show Start Guest Sandbox CTA */}
+          {isGuest && !isGuestSandbox && onStartGuestSandbox && (
+            <button
+              onClick={onStartGuestSandbox}
+              style={{
+                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.16) 0%, rgba(217, 119, 6, 0.25) 100%)',
+                border: '1px solid rgba(245, 158, 11, 0.4)',
+                borderRadius: '10px',
+                padding: '0.65rem 0.85rem',
+                color: '#fef3c7',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: '0 2px 10px rgba(245, 158, 11, 0.15)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.35) 100%)'
+                e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.6)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.16) 0%, rgba(217, 119, 6, 0.25) 100%)'
+                e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.4)'
+              }}
+            >
+              <span>🎭</span>
+              <div style={{ textAlign: 'left', lineHeight: 1.25 }}>
+                <div>Start Guest Sandbox</div>
+                <div style={{ fontSize: '0.68rem', color: '#fde68a', fontWeight: 500 }}>
+                  Upload & extract your own files
+                </div>
+              </div>
+            </button>
+          )}
 
           <button
             onClick={handleNewChat}
@@ -458,6 +522,66 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })()}
         </div>
 
+
+        {/* Guest Sandbox Active Footer Card */}
+        {isGuestSandbox && (
+          <div
+            style={{
+              padding: '0.85rem 1rem',
+              margin: '0 0.75rem 0.75rem',
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.18) 100%)',
+              border: '1px solid rgba(245, 158, 11, 0.35)',
+              borderRadius: '12px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.6rem',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.78rem', color: '#fef3c7', fontWeight: 700 }}>
+              <span>🎭</span>
+              <span>Guest Sandbox Active</span>
+            </div>
+            <p style={{ fontSize: '0.7rem', color: '#fde68a', margin: 0, lineHeight: 1.35 }}>
+              Your files & chat are temporary and will be deleted when you leave.
+            </p>
+            <div style={{ display: 'flex', gap: '0.45rem', marginTop: '0.2rem' }}>
+              <button
+                onClick={onOpenAuth}
+                style={{
+                  flex: 1,
+                  background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '0.35rem',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                ✨ Sign In to Save
+              </button>
+              {onEndGuestSession && (
+                <button
+                  onClick={onEndGuestSession}
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.2)',
+                    color: '#fca5a5',
+                    border: '1px solid rgba(239, 68, 68, 0.4)',
+                    borderRadius: '6px',
+                    padding: '0.35rem 0.6rem',
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                  title="Wipe temporary files and return to demo"
+                >
+                  🗑️ Leave
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Sidebar Footer */}
         <div style={{ padding: '0.85rem 1rem', borderTop: '1px solid var(--border-color)', fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
