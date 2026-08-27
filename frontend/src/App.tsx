@@ -666,10 +666,10 @@ export default function App() {
                   onClick={handleStartGuestSandbox}
                   title="Upload your own documents and test without signing in"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(30, 64, 175, 0.35) 0%, rgba(37, 99, 235, 0.3) 50%, rgba(14, 116, 144, 0.35) 100%)',
-                    border: '1px solid rgba(96, 165, 250, 0.5)',
+                    background: 'linear-gradient(135deg, rgba(131, 24, 67, 0.35) 0%, rgba(190, 24, 93, 0.3) 50%, rgba(219, 39, 119, 0.25) 100%)',
+                    border: '1px solid rgba(244, 114, 182, 0.5)',
                     borderRadius: '8px',
-                    color: '#f0f9ff',
+                    color: '#fdf2f8',
                     padding: '0.38rem 0.85rem',
                     fontSize: '0.8rem',
                     fontWeight: 700,
@@ -677,24 +677,24 @@ export default function App() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.4rem',
-                    boxShadow: '0 2px 12px rgba(37, 99, 235, 0.25), inset 0 0 10px rgba(56, 189, 248, 0.08)',
+                    boxShadow: '0 2px 12px rgba(219, 39, 119, 0.22), inset 0 0 10px rgba(244, 114, 182, 0.08)',
                     transition: 'all 0.15s ease',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-1px)'
-                    e.currentTarget.style.boxShadow = '0 4px 18px rgba(37, 99, 235, 0.45)'
-                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(30, 64, 175, 0.5) 0%, rgba(37, 99, 235, 0.45) 50%, rgba(14, 116, 144, 0.45) 100%)'
-                    e.currentTarget.style.borderColor = 'rgba(147, 197, 253, 0.75)'
+                    e.currentTarget.style.boxShadow = '0 4px 18px rgba(219, 39, 119, 0.4)'
+                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(131, 24, 67, 0.5) 0%, rgba(190, 24, 93, 0.45) 50%, rgba(219, 39, 119, 0.4) 100%)'
+                    e.currentTarget.style.borderColor = 'rgba(249, 168, 212, 0.8)'
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'none'
-                    e.currentTarget.style.boxShadow = '0 2px 12px rgba(37, 99, 235, 0.25)'
-                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(30, 64, 175, 0.35) 0%, rgba(37, 99, 235, 0.3) 50%, rgba(14, 116, 144, 0.35) 100%)'
-                    e.currentTarget.style.borderColor = 'rgba(96, 165, 250, 0.5)'
+                    e.currentTarget.style.boxShadow = '0 2px 12px rgba(219, 39, 119, 0.22)'
+                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(131, 24, 67, 0.35) 0%, rgba(190, 24, 93, 0.3) 50%, rgba(219, 39, 119, 0.25) 100%)'
+                    e.currentTarget.style.borderColor = 'rgba(244, 114, 182, 0.5)'
                   }}
                 >
                   <span style={{ fontSize: '0.95rem' }}>🎭</span>
-                  <span style={{ color: '#e0f2fe' }}>Try Guest Sandbox</span>
+                  <span style={{ color: '#fce7f3' }}>Try Guest Sandbox</span>
                 </button>
 
                 <button
@@ -734,13 +734,13 @@ export default function App() {
                   title="Guest Sandbox Session"
                   style={{
                     fontSize: '0.78rem',
-                    color: '#bae6fd',
-                    background: 'rgba(30, 64, 175, 0.3)',
-                    border: '1px solid rgba(96, 165, 250, 0.45)',
+                    color: '#fbcfe8',
+                    background: 'rgba(131, 24, 67, 0.3)',
+                    border: '1px solid rgba(244, 114, 182, 0.45)',
                     borderRadius: '6px',
                     padding: '0.2rem 0.55rem',
                     fontWeight: 600,
-                    boxShadow: '0 0 10px rgba(37, 99, 235, 0.2)',
+                    boxShadow: '0 0 10px rgba(219, 39, 119, 0.2)',
                   }}
                 >
                   🎭 Guest Sandbox
@@ -749,8 +749,8 @@ export default function App() {
                 <button
                   onClick={() => setShowAuthModal(true)}
                   style={{
-                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                    border: '1px solid rgba(147, 197, 253, 0.4)',
+                    background: 'linear-gradient(135deg, #ec4899 0%, #db2777 50%, #be185d 100%)',
+                    border: '1px solid rgba(251, 207, 232, 0.4)',
                     borderRadius: '8px',
                     color: '#ffffff',
                     padding: '0.35rem 0.75rem',
@@ -760,7 +760,7 @@ export default function App() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.35rem',
-                    boxShadow: '0 2px 10px rgba(37, 99, 235, 0.4)',
+                    boxShadow: '0 2px 10px rgba(236, 72, 153, 0.4)',
                   }}
                 >
                   <span>✨</span>
@@ -898,21 +898,21 @@ export default function App() {
         {isGuestSandbox && (
           <div
             style={{
-              background: 'linear-gradient(90deg, rgba(15, 35, 85, 0.85) 0%, rgba(29, 78, 216, 0.45) 50%, rgba(14, 116, 144, 0.55) 100%)',
-              borderBottom: '1px solid rgba(96, 165, 250, 0.4)',
+              background: 'linear-gradient(90deg, rgba(80, 15, 45, 0.85) 0%, rgba(157, 23, 77, 0.45) 50%, rgba(219, 39, 119, 0.5) 100%)',
+              borderBottom: '1px solid rgba(244, 114, 182, 0.4)',
               padding: '0.45rem 1.5rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               flexWrap: 'wrap',
               gap: '0.75rem',
-              boxShadow: '0 2px 12px rgba(29, 78, 216, 0.2), inset 0 0 10px rgba(56, 189, 248, 0.06)',
+              boxShadow: '0 2px 12px rgba(219, 39, 119, 0.2), inset 0 0 10px rgba(244, 114, 182, 0.06)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', fontSize: '0.82rem', color: '#f0f9ff' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', fontSize: '0.82rem', color: '#fdf2f8' }}>
               <span style={{ fontSize: '1rem' }}>🎭</span>
-              <span style={{ fontWeight: 700, color: '#bae6fd' }}>Guest Sandbox Mode:</span>
-              <span style={{ color: '#93c5fd' }}>
+              <span style={{ fontWeight: 700, color: '#fbcfe8' }}>Guest Sandbox Mode:</span>
+              <span style={{ color: '#f9a8d4' }}>
                 Upload files, chat, and test knowledge graphs freely. Your workspace persists across page refresh and is wiped clean when you leave.
               </span>
             </div>
@@ -920,15 +920,15 @@ export default function App() {
               <button
                 onClick={() => setShowAuthModal(true)}
                 style={{
-                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  background: 'linear-gradient(135deg, #ec4899 0%, #db2777 50%, #be185d 100%)',
                   color: '#ffffff',
-                  border: '1px solid rgba(147, 197, 253, 0.4)',
+                  border: '1px solid rgba(251, 207, 232, 0.4)',
                   borderRadius: '6px',
                   padding: '0.28rem 0.75rem',
                   fontSize: '0.74rem',
                   fontWeight: 700,
                   cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.4)',
+                  boxShadow: '0 2px 8px rgba(236, 72, 153, 0.4)',
                 }}
               >
                 💾 Sign Up to Save

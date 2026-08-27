@@ -269,11 +269,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button
               onClick={onStartGuestSandbox}
               style={{
-                background: 'linear-gradient(135deg, rgba(30, 64, 175, 0.35) 0%, rgba(37, 99, 235, 0.25) 50%, rgba(14, 116, 144, 0.3) 100%)',
-                border: '1px solid rgba(96, 165, 250, 0.45)',
+                background: 'linear-gradient(135deg, rgba(131, 24, 67, 0.35) 0%, rgba(190, 24, 93, 0.25) 50%, rgba(219, 39, 119, 0.2) 100%)',
+                border: '1px solid rgba(244, 114, 182, 0.45)',
                 borderRadius: '10px',
                 padding: '0.65rem 0.85rem',
-                color: '#f0f9ff',
+                color: '#fdf2f8',
                 fontSize: '0.82rem',
                 fontWeight: 700,
                 display: 'flex',
@@ -281,23 +281,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 gap: '0.5rem',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
-                boxShadow: '0 2px 12px rgba(37, 99, 235, 0.22), inset 0 0 10px rgba(56, 189, 248, 0.08)',
+                boxShadow: '0 2px 12px rgba(219, 39, 119, 0.2), inset 0 0 10px rgba(244, 114, 182, 0.08)',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(30, 64, 175, 0.5) 0%, rgba(37, 99, 235, 0.4) 50%, rgba(14, 116, 144, 0.45) 100%)'
-                e.currentTarget.style.borderColor = 'rgba(147, 197, 253, 0.75)'
-                e.currentTarget.style.boxShadow = '0 4px 18px rgba(37, 99, 235, 0.4)'
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(131, 24, 67, 0.5) 0%, rgba(190, 24, 93, 0.4) 50%, rgba(219, 39, 119, 0.35) 100%)'
+                e.currentTarget.style.borderColor = 'rgba(249, 168, 212, 0.8)'
+                e.currentTarget.style.boxShadow = '0 4px 18px rgba(219, 39, 119, 0.35)'
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(30, 64, 175, 0.35) 0%, rgba(37, 99, 235, 0.25) 50%, rgba(14, 116, 144, 0.3) 100%)'
-                e.currentTarget.style.borderColor = 'rgba(96, 165, 250, 0.45)'
-                e.currentTarget.style.boxShadow = '0 2px 12px rgba(37, 99, 235, 0.22)'
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(131, 24, 67, 0.35) 0%, rgba(190, 24, 93, 0.25) 50%, rgba(219, 39, 119, 0.2) 100%)'
+                e.currentTarget.style.borderColor = 'rgba(244, 114, 182, 0.45)'
+                e.currentTarget.style.boxShadow = '0 2px 12px rgba(219, 39, 119, 0.2)'
               }}
             >
               <span style={{ fontSize: '1rem' }}>🎭</span>
               <div style={{ textAlign: 'left', lineHeight: 1.25 }}>
-                <div style={{ color: '#e0f2fe' }}>Start Guest Sandbox</div>
-                <div style={{ fontSize: '0.68rem', color: '#7dd3fc', fontWeight: 500 }}>
+                <div style={{ color: '#fce7f3' }}>Start Guest Sandbox</div>
+                <div style={{ fontSize: '0.68rem', color: '#f9a8d4', fontWeight: 500 }}>
                   Upload & extract your own files
                 </div>
               </div>
@@ -531,20 +531,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
             style={{
               padding: '0.85rem 1rem',
               margin: '0 0.75rem 0.75rem',
-              background: 'linear-gradient(135deg, rgba(15, 35, 85, 0.7) 0%, rgba(29, 78, 216, 0.3) 50%, rgba(14, 116, 144, 0.4) 100%)',
-              border: '1px solid rgba(96, 165, 250, 0.45)',
+              background: 'linear-gradient(135deg, rgba(80, 15, 45, 0.65) 0%, rgba(157, 23, 77, 0.25) 50%, rgba(219, 39, 119, 0.2) 100%)',
+              border: '1px solid rgba(244, 114, 182, 0.45)',
               borderRadius: '12px',
               display: 'flex',
               flexDirection: 'column',
               gap: '0.55rem',
-              boxShadow: '0 4px 18px rgba(29, 78, 216, 0.25), inset 0 0 12px rgba(56, 189, 248, 0.08)',
+              boxShadow: '0 4px 18px rgba(219, 39, 119, 0.2), inset 0 0 12px rgba(244, 114, 182, 0.08)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.8rem', color: '#e0f2fe', fontWeight: 700 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.8rem', color: '#fdf2f8', fontWeight: 700 }}>
               <span style={{ fontSize: '0.95rem' }}>🎭</span>
-              <span style={{ color: '#bae6fd', textShadow: '0 0 10px rgba(56, 189, 248, 0.4)' }}>Guest Sandbox Active</span>
+              <span style={{ color: '#fbcfe8', textShadow: '0 0 10px rgba(244, 114, 182, 0.4)' }}>Guest Sandbox Active</span>
             </div>
-            <p style={{ fontSize: '0.72rem', color: '#93c5fd', margin: 0, lineHeight: 1.4 }}>
+            <p style={{ fontSize: '0.72rem', color: '#f9a8d4', margin: 0, lineHeight: 1.4 }}>
               Your files & chat are temporary and will be deleted when you leave.
             </p>
             <div style={{ display: 'flex', gap: '0.45rem', marginTop: '0.2rem' }}>
@@ -552,24 +552,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={onOpenAuth}
                 style={{
                   flex: 1,
-                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  background: 'linear-gradient(135deg, #ec4899 0%, #db2777 50%, #be185d 100%)',
                   color: '#ffffff',
-                  border: '1px solid rgba(147, 197, 253, 0.4)',
+                  border: '1px solid rgba(251, 207, 232, 0.4)',
                   borderRadius: '7px',
                   padding: '0.38rem',
                   fontSize: '0.74rem',
                   fontWeight: 700,
                   cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.4)',
+                  boxShadow: '0 2px 8px rgba(236, 72, 153, 0.35)',
                   transition: 'all 0.15s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.6)'
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #f472b6 0%, #ec4899 100%)'
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(236, 72, 153, 0.55)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(37, 99, 235, 0.4)'
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #ec4899 0%, #db2777 50%, #be185d 100%)'
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(236, 72, 153, 0.35)'
                 }}
               >
                 ✨ Sign In to Save
