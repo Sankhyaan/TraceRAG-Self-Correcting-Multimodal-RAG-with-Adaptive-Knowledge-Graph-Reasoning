@@ -148,6 +148,17 @@ export const FileViewerModal: React.FC<FileViewerModalProps> = ({
      filename.toLowerCase().match(/\.(docx?|txt|md)$/) ? 'document' : 'document')
   )
 
+  const DEMO_FILENAMES = [
+    'VoltBus_Master_Operations_Engineering_Brief_Clean.pdf',
+    'route101_network_map.png',
+    'thermal_safety_flowchart.png',
+    'voltbus_route101_debrief.mp3',
+    'voltbus_v3_schematic.png',
+  ]
+
+  const isDemoFile = DEMO_FILENAMES.some((df) => df.toLowerCase() === filename.toLowerCase())
+  const demoPublicUrl = isDemoFile ? `/demo_files/${encodeURIComponent(filename)}` : null
+
   const isPdf = fileType === 'pdf' || filename.toLowerCase().endsWith('.pdf')
   const isDocx = filename.toLowerCase().endsWith('.docx') || filename.toLowerCase().endsWith('.doc')
   const isImage = fileType === 'image' || Boolean(filename.toLowerCase().match(/\.(png|jpe?g|webp|gif|svg|bmp)$/))
@@ -160,7 +171,7 @@ export const FileViewerModal: React.FC<FileViewerModalProps> = ({
     ? `${API_BASE}/files/${effectiveId}/stream`
     : `${API_BASE}/files/${effectiveId}/stream`
 
-  const mediaUrl = signedUrl || directEndpointUrl || (file?.storage_url?.startsWith('http') ? file.storage_url : null)
+  const mediaUrl = demoPublicUrl || signedUrl || directEndpointUrl || (file?.storage_url?.startsWith('http') ? file.storage_url : null)
 
 
   const targetPageText = (isPdf || isDocx) && initialPage && extractedData?.extracted_text ? getTargetPageExtraction(extractedData.extracted_text, initialPage) : null
@@ -663,9 +674,12 @@ export const FileViewerModal: React.FC<FileViewerModalProps> = ({
                     src={mediaUrl}
                     alt={filename}
                     onError={(e) => {
-                      const fallback = `${API_BASE}/files/${effectiveId}/thumbnail`
-                      if (e.currentTarget.src !== fallback) {
-                        e.currentTarget.src = fallback
+                      const demoFallback = demoPublicUrl
+                      const streamFallback = `${API_BASE}/files/${effectiveId}/thumbnail`
+                      if (demoFallback && !e.currentTarget.src.includes(demoFallback)) {
+                        e.currentTarget.src = demoFallback
+                      } else if (e.currentTarget.src !== streamFallback) {
+                        e.currentTarget.src = streamFallback
                       }
                     }}
                     style={{ maxWidth: '100%', maxHeight: '72vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}
@@ -698,9 +712,12 @@ export const FileViewerModal: React.FC<FileViewerModalProps> = ({
                     autoPlay
                     src={mediaUrl}
                     onError={(e) => {
-                      const fallback = `${API_BASE}/files/${effectiveId}/stream`
-                      if (e.currentTarget.src !== fallback) {
-                        e.currentTarget.src = fallback
+                      const demoFallback = demoPublicUrl
+                      const streamFallback = `${API_BASE}/files/${effectiveId}/stream`
+                      if (demoFallback && !e.currentTarget.src.includes(demoFallback)) {
+                        e.currentTarget.src = demoFallback
+                      } else if (e.currentTarget.src !== streamFallback) {
+                        e.currentTarget.src = streamFallback
                       }
                     }}
                     onLoadedMetadata={(e) => handleMediaSeek(e.currentTarget)}

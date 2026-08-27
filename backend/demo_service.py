@@ -98,9 +98,33 @@ def seed_demo_workspace() -> Dict[str, Any]:
             if not os.path.isfile(fpath):
                 continue
 
-            # If already extracted and done, skip
+            # If already in DB with status done, verify and ensure storage object exists
             if fname in existing_files and existing_files[fname].get("status") == "done":
-                logger.info(f"Demo file '{fname}' already ingested.")
+                storage_path = existing_files[fname].get("storage_path")
+                if storage_path:
+                    try:
+                        with open(fpath, "rb") as f:
+                            file_bytes = f.read()
+                        ext = Path(fname).suffix.lower()
+                        mime = "application/octet-stream"
+                        if ext == ".pdf":
+                            mime = "application/pdf"
+                        elif ext in (".png", ".webp"):
+                            mime = f"image/{ext[1:]}"
+                        elif ext in (".jpg", ".jpeg"):
+                            mime = "image/jpeg"
+                        elif ext == ".mp3":
+                            mime = "audio/mpeg"
+                        elif ext == ".mp4":
+                            mime = "video/mp4"
+                        supabase.storage.from_(storage_service.bucket).upload(
+                            storage_path,
+                            file_bytes,
+                            {"content-type": mime, "upsert": "true"},
+                        )
+                    except Exception as e:
+                        logger.debug(f"Storage ensure notice for '{fname}': {e}")
+                logger.info(f"Demo file '{fname}' verified in database and storage.")
                 continue
 
             try:
