@@ -369,43 +369,148 @@ export const RetrievalTester: React.FC<RetrievalTesterProps> = ({ conversationId
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* ── Search Form ─────────────────────────────────────────────────── */}
       <form onSubmit={handleSearch} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <div style={{ flex: 1, position: 'relative' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '0.75rem',
+            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 27, 75, 0.75) 50%, rgba(15, 23, 42, 0.92) 100%)',
+            backdropFilter: 'blur(20px)',
+            padding: '0.65rem 0.85rem',
+            borderRadius: '18px',
+            border: '1px solid rgba(99, 102, 241, 0.35)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.45), 0 0 25px rgba(99, 102, 241, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+          }}
+        >
+          {/* Interactive Search Input Wrapper */}
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(56, 189, 248, 0.25)',
+              borderRadius: '12px',
+              boxShadow: 'inset 0 2px 6px rgba(0, 0, 0, 0.3), 0 0 12px rgba(56, 189, 248, 0.08)',
+              transition: 'all 0.2s ease',
+            }}
+            onFocusCapture={(e) => {
+              e.currentTarget.style.borderColor = '#38bdf8'
+              e.currentTarget.style.boxShadow = '0 0 22px rgba(56, 189, 248, 0.35), 0 0 8px rgba(99, 102, 241, 0.3), inset 0 0 12px rgba(56, 189, 248, 0.1)'
+              e.currentTarget.style.background = 'rgba(15, 23, 42, 0.85)'
+            }}
+            onBlurCapture={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.25)'
+              e.currentTarget.style.boxShadow = 'inset 0 2px 6px rgba(0, 0, 0, 0.3), 0 0 12px rgba(56, 189, 248, 0.08)'
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+            }}
+          >
+            {/* Radiant Search Icon Badge */}
+            <div style={{ paddingLeft: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+              <div
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
+                  background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(6, 182, 212, 0.3) 100%)',
+                  border: '1px solid rgba(56, 189, 248, 0.5)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1rem',
+                  boxShadow: '0 0 12px rgba(6, 182, 212, 0.35)',
+                }}
+              >
+                🔍
+              </div>
+            </div>
+
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Ask anything across documents, audio, video & images..."
               style={{
-                width: '100%', boxSizing: 'border-box',
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                borderRadius: '14px',
-                padding: '0.9rem 1.25rem',
-                color: '#fff', fontSize: '0.95rem', outline: 'none',
-                transition: 'border-color 0.2s',
+                flex: 1,
+                boxSizing: 'border-box',
+                background: 'transparent',
+                border: 'none',
+                padding: '0.85rem 0.9rem',
+                color: '#fff',
+                fontSize: '0.95rem',
+                outline: 'none',
+                fontFamily: 'inherit',
               }}
-              onFocus={(e) => (e.target.style.borderColor = 'rgba(99,102,241,0.6)')}
-              onBlur={(e) => (e.target.style.borderColor = 'rgba(255,255,255,0.12)')}
             />
+
+            {query.length > 0 && !loading && (
+              <button
+                type="button"
+                onClick={() => setQuery('')}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '24px',
+                  height: '24px',
+                  color: '#cbd5e1',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: '0.75rem',
+                  fontSize: '0.75rem',
+                }}
+                title="Clear query"
+              >
+                ✕
+              </button>
+            )}
           </div>
+
           <button
             type="submit"
             disabled={loading}
             style={{
-              padding: '0.9rem 1.75rem', fontSize: '0.92rem', borderRadius: '14px',
+              padding: '0.85rem 1.75rem',
+              fontSize: '0.94rem',
+              borderRadius: '12px',
               background: loading
                 ? 'rgba(99,102,241,0.4)'
-                : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-              color: '#fff', border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-              fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem',
-              boxShadow: loading ? 'none' : '0 0 20px rgba(99,102,241,0.4)',
-              transition: 'all 0.2s ease', whiteSpace: 'nowrap',
+                : 'linear-gradient(135deg, #6366f1 0%, #3b82f6 50%, #06b6d4 100%)',
+              color: '#fff',
+              border: '1px solid rgba(255, 255, 255, 0.35)',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              boxShadow: loading ? 'none' : '0 4px 20px rgba(99, 102, 241, 0.5), 0 0 16px rgba(6, 182, 212, 0.4)',
+              transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'
+                e.currentTarget.style.boxShadow = '0 6px 26px rgba(99, 102, 241, 0.75), 0 0 22px rgba(6, 182, 212, 0.6)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'none'
+                e.currentTarget.style.boxShadow = '0 4px 20px rgba(99, 102, 241, 0.5), 0 0 16px rgba(6, 182, 212, 0.4)'
+              }
             }}
           >
             {loading ? (
-              <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Searching…</>
-            ) : '🔍 Retrieve'}
+              <>
+                <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Searching…
+              </>
+            ) : (
+              <>
+                <span>Retrieve</span>
+                <span>➔</span>
+              </>
+            )}
           </button>
         </div>
 

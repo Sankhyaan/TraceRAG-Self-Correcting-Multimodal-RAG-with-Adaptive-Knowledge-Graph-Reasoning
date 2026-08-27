@@ -491,23 +491,62 @@ export const KnowledgeGraphViewer: React.FC<KnowledgeGraphViewerProps> = ({ conv
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-          {/* Search Input */}
-          <input
-            type="text"
-            placeholder="Search entities or types..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+          {/* Shiny Interactive Search Input */}
+          <div
             style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '8px',
-              padding: '0.4rem 0.75rem',
-              fontSize: '0.82rem',
-              color: 'var(--text-primary)',
-              width: '220px',
-              outline: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              background: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(56, 189, 248, 0.3)',
+              borderRadius: '10px',
+              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.25), 0 0 10px rgba(56, 189, 248, 0.08)',
+              transition: 'all 0.2s ease',
+              width: '240px',
             }}
-          />
+            onFocusCapture={(e) => {
+              e.currentTarget.style.borderColor = '#38bdf8'
+              e.currentTarget.style.boxShadow = '0 0 18px rgba(56, 189, 248, 0.35)'
+              e.currentTarget.style.background = 'rgba(15, 23, 42, 0.85)'
+            }}
+            onBlurCapture={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.3)'
+              e.currentTarget.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.25), 0 0 10px rgba(56, 189, 248, 0.08)'
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)'
+            }}
+          >
+            <span style={{ paddingLeft: '0.6rem', fontSize: '0.85rem', color: '#38bdf8' }}>🔍</span>
+            <input
+              type="text"
+              placeholder="Search entities or types..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: '0.45rem 0.65rem',
+                fontSize: '0.82rem',
+                color: '#f8fafc',
+                width: '100%',
+                outline: 'none',
+              }}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#94a3b8',
+                  cursor: 'pointer',
+                  paddingRight: '0.5rem',
+                  fontSize: '0.75rem',
+                }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
 
           <button
             onClick={handleRebuild}

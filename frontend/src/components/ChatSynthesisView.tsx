@@ -1154,63 +1154,190 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area - Sleek, Full-Width Bottom Bar */}
+      {/* Input Area - Ultra-Modern, Colorful & Shiny Interactive Search Bar */}
       <form
         onSubmit={handleSend}
         style={{
           display: 'flex',
+          alignItems: 'center',
           gap: '0.75rem',
-          background: 'rgba(15, 23, 42, 0.85)',
-          backdropFilter: 'blur(12px)',
+          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 27, 75, 0.75) 50%, rgba(15, 23, 42, 0.92) 100%)',
+          backdropFilter: 'blur(20px)',
           padding: '0.65rem 0.85rem',
-          borderRadius: '16px',
-          border: '1px solid var(--border-color)',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.25)',
+          borderRadius: '18px',
+          border: '1px solid rgba(99, 102, 241, 0.35)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.45), 0 0 25px rgba(99, 102, 241, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
           flexShrink: 0,
+          position: 'relative',
+          transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
-        <input
-          type="text"
-          value={inputQuery}
-          onChange={(e) => setInputQuery(e.target.value)}
-          placeholder="Ask Trace anything or discuss your files..."
-          disabled={loading}
+        {/* Shiny Interactive Input Wrapper */}
+        <div
           style={{
             flex: 1,
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
             background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '10px',
-            padding: '0.8rem 1.1rem',
-            color: 'var(--text-primary)',
-            fontSize: '0.94rem',
-            outline: 'none',
-            transition: 'all 0.2s',
+            border: '1px solid rgba(56, 189, 248, 0.25)',
+            borderRadius: '12px',
+            boxShadow: 'inset 0 2px 6px rgba(0, 0, 0, 0.3), 0 0 12px rgba(56, 189, 248, 0.08)',
+            transition: 'all 0.2s ease',
           }}
-          onFocus={(e) => {
-            e.currentTarget.style.borderColor = 'var(--accent-blue)'
-            e.currentTarget.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.2)'
+          onFocusCapture={(e) => {
+            e.currentTarget.style.borderColor = '#38bdf8'
+            e.currentTarget.style.boxShadow = '0 0 22px rgba(56, 189, 248, 0.35), 0 0 8px rgba(99, 102, 241, 0.3), inset 0 0 12px rgba(56, 189, 248, 0.1)'
+            e.currentTarget.style.background = 'rgba(15, 23, 42, 0.85)'
           }}
-          onBlur={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'
-            e.currentTarget.style.boxShadow = 'none'
+          onBlurCapture={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.25)'
+            e.currentTarget.style.boxShadow = 'inset 0 2px 6px rgba(0, 0, 0, 0.3), 0 0 12px rgba(56, 189, 248, 0.08)'
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
           }}
-        />
+        >
+          {/* Radiant Shiny AI Search Icon */}
+          <div
+            style={{
+              paddingLeft: '0.85rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              pointerEvents: 'none',
+            }}
+          >
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(6, 182, 212, 0.3) 100%)',
+                border: '1px solid rgba(56, 189, 248, 0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1rem',
+                boxShadow: '0 0 12px rgba(6, 182, 212, 0.35)',
+              }}
+            >
+              ✨
+            </div>
+          </div>
 
+          <input
+            type="text"
+            value={inputQuery}
+            onChange={(e) => setInputQuery(e.target.value)}
+            placeholder="Ask Trace anything or discuss your files..."
+            disabled={loading}
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: 'none',
+              padding: '0.85rem 0.9rem',
+              color: '#f8fafc',
+              fontSize: '0.95rem',
+              outline: 'none',
+              fontFamily: 'inherit',
+            }}
+          />
+
+          {/* Quick Clear Input Button */}
+          {inputQuery.length > 0 && !loading && (
+            <button
+              type="button"
+              onClick={() => setInputQuery('')}
+              style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '24px',
+                height: '24px',
+                color: '#cbd5e1',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: '0.75rem',
+                fontSize: '0.75rem',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.3)'
+                e.currentTarget.style.color = '#fff'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                e.currentTarget.style.color = '#cbd5e1'
+              }}
+              title="Clear text"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* Shiny Interactive Colorful Send Button */}
         <button
           type="submit"
           disabled={loading || !inputQuery.trim()}
-          className="btn btn-primary"
           style={{
-            padding: '0.8rem 1.6rem',
-            fontWeight: 600,
+            padding: '0.85rem 1.65rem',
+            fontWeight: 700,
             display: 'flex',
             alignItems: 'center',
-            gap: '0.45rem',
-            borderRadius: '10px',
-            fontSize: '0.92rem',
+            gap: '0.5rem',
+            borderRadius: '12px',
+            fontSize: '0.94rem',
+            cursor: loading || !inputQuery.trim() ? 'not-allowed' : 'pointer',
+            background: inputQuery.trim()
+              ? 'linear-gradient(135deg, #6366f1 0%, #3b82f6 50%, #06b6d4 100%)'
+              : 'linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(59, 130, 246, 0.15) 100%)',
+            border: inputQuery.trim()
+              ? '1px solid rgba(255, 255, 255, 0.4)'
+              : '1px solid rgba(99, 102, 241, 0.3)',
+            color: inputQuery.trim() ? '#ffffff' : '#94a3b8',
+            boxShadow: inputQuery.trim()
+              ? '0 4px 20px rgba(99, 102, 241, 0.5), 0 0 16px rgba(6, 182, 212, 0.4)'
+              : 'none',
+            transform: 'none',
+            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+            whiteSpace: 'nowrap',
+          }}
+          onMouseEnter={(e) => {
+            if (inputQuery.trim() && !loading) {
+              e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'
+              e.currentTarget.style.boxShadow = '0 6px 26px rgba(99, 102, 241, 0.75), 0 0 22px rgba(6, 182, 212, 0.6)'
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (inputQuery.trim() && !loading) {
+              e.currentTarget.style.transform = 'none'
+              e.currentTarget.style.boxShadow = '0 4px 20px rgba(99, 102, 241, 0.5), 0 0 16px rgba(6, 182, 212, 0.4)'
+            }
           }}
         >
-          {loading ? 'Synthesizing...' : 'Send ➔'}
+          {loading ? (
+            <>
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: '16px',
+                  height: '16px',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  borderTopColor: '#00f0ff',
+                  borderRadius: '50%',
+                  animation: 'spinSlow 0.8s linear infinite',
+                }}
+              />
+              <span>Synthesizing...</span>
+            </>
+          ) : (
+            <>
+              <span>Send</span>
+              <span style={{ fontSize: '1.05rem', transition: 'transform 0.15s ease' }}>➔</span>
+            </>
+          )}
         </button>
       </form>
 
