@@ -391,27 +391,80 @@ export const FileManager: React.FC<FileManagerProps> = ({
           </div>
         </div>
 
-        {/* Guest Demo Mode Explanatory Notice */}
+        {/* Guest Demo Mode & Sandbox Mode Explanatory Notices */}
         {isGuest && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+            {/* Demo Notice */}
+            <div
+              style={{
+                background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%)',
+                border: '1px solid rgba(56, 189, 248, 0.22)',
+                borderRadius: '8px',
+                padding: '0.45rem 0.75rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.73rem',
+                color: '#e2e8f0',
+                lineHeight: '1.4',
+              }}
+            >
+              <span style={{ fontSize: '0.95rem', flexShrink: 0 }}>💡</span>
+              <div>
+                <span style={{ fontWeight: 700, color: '#38bdf8' }}>Guest Demo Mode: </span>
+                <span>
+                  You are currently exploring the canonical VoltBus dataset. You can freely test queries, inspect multimodal retrieval weights, and traverse the Knowledge Graph. In Demo Mode, refreshing the page will reset Chat Synthesis and Retrieval Inspector back to their default demo state.
+                </span>
+              </div>
+            </div>
+
+            {/* Sandbox Notice */}
+            <div
+              style={{
+                background: 'linear-gradient(135deg, rgba(30, 64, 175, 0.2) 0%, rgba(37, 99, 235, 0.15) 50%, rgba(14, 116, 144, 0.2) 100%)',
+                border: '1px solid rgba(96, 165, 250, 0.35)',
+                borderRadius: '8px',
+                padding: '0.45rem 0.75rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.73rem',
+                color: '#e0f2fe',
+                lineHeight: '1.4',
+              }}
+            >
+              <span style={{ fontSize: '0.95rem', flexShrink: 0 }}>🎭</span>
+              <div>
+                <span style={{ fontWeight: 700, color: '#93c5fd' }}>Guest Sandbox Mode: </span>
+                <span>
+                  Want to test TraceRAG on your own custom files without creating an account? Click <strong>"Try Guest Sandbox"</strong> above to upload your documents, index knowledge graphs, and test queries. Sandbox sessions persist across page refreshes and are automatically wiped clean when you leave.
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Sandbox Active Notice (when user is inside a guest sandbox workspace) */}
+        {!isGuest && conversationId.startsWith('conv_guest_') && (
           <div
             style={{
-              background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%)',
-              border: '1px solid rgba(56, 189, 248, 0.22)',
+              background: 'linear-gradient(135deg, rgba(30, 64, 175, 0.25) 0%, rgba(37, 99, 235, 0.18) 50%, rgba(14, 116, 144, 0.25) 100%)',
+              border: '1px solid rgba(96, 165, 250, 0.45)',
               borderRadius: '8px',
               padding: '0.45rem 0.75rem',
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
               fontSize: '0.73rem',
-              color: '#e2e8f0',
+              color: '#f0f9ff',
               lineHeight: '1.4',
             }}
           >
-            <span style={{ fontSize: '0.95rem', flexShrink: 0 }}>💡</span>
+            <span style={{ fontSize: '0.95rem', flexShrink: 0 }}>🎭</span>
             <div>
-              <span style={{ fontWeight: 700, color: '#38bdf8' }}>Guest Demo Mode: </span>
+              <span style={{ fontWeight: 700, color: '#bae6fd' }}>Guest Sandbox Active: </span>
               <span>
-                You are currently in Guest Mode. You can freely explore, test queries, inspect retrieval weights, and traverse the Knowledge Graph. To upload your own custom files, create private workspaces, and save changes, please <strong>Sign In</strong>. Note that in Guest Mode, refreshing the page will reset Chat Synthesis and Retrieval Inspector back to their default demo state.
+                You are in Sandbox Mode with full file upload & knowledge graph extraction capabilities. Your files persist across page refresh and will be wiped clean when you end the session. Click <strong>"Sign In to Save"</strong> anytime to preserve your workspace.
               </span>
             </div>
           </div>

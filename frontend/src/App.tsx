@@ -583,28 +583,31 @@ export default function App() {
 
           {/* Top Right: Guest Mode / User Info + Sign In/Out + Clear Workspace */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Active Session:</span>
-              <span
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  color: '#38bdf8',
-                  fontWeight: 600,
-                  fontSize: '0.84rem',
-                  background: 'rgba(6, 182, 212, 0.12)',
-                  padding: '0.25rem 0.65rem',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(56, 189, 248, 0.35)',
-                  boxShadow: '0 0 14px rgba(6, 182, 212, 0.18)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                }}
-              >
-                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 8px #38bdf8', display: 'inline-block' }} />
-                {effectiveConversationId === 'conv_demo' ? '🌟 VoltBus Demo' : effectiveConversationId}
-              </span>
-            </div>
+            {/* Active Session tag: Only displayed in Guest Sandbox or signed-in accounts */}
+            {(user || isGuestSandbox) && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Active Session:</span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    color: '#38bdf8',
+                    fontWeight: 600,
+                    fontSize: '0.84rem',
+                    background: 'rgba(6, 182, 212, 0.12)',
+                    padding: '0.25rem 0.65rem',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(56, 189, 248, 0.35)',
+                    boxShadow: '0 0 14px rgba(6, 182, 212, 0.18)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                  }}
+                >
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 8px #38bdf8', display: 'inline-block' }} />
+                  {isGuestSandbox ? '🎭 Guest Sandbox' : effectiveConversationId}
+                </span>
+              </div>
+            )}
 
             {/* Guest Mode Indicator & Sign In CTA */}
             {!user ? (
