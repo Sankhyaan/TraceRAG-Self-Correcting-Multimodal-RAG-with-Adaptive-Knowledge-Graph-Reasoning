@@ -789,11 +789,11 @@ export function AuthGate({ onAuthenticated, onStartAuthTransition, onStartGuestS
               }}
               style={{
                 width: '100%',
-                padding: '0.75rem 1rem',
+                padding: '0.8rem 1rem',
                 borderRadius: '14px',
-                border: '1px solid rgba(245, 158, 11, 0.45)',
-                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(217, 119, 6, 0.22) 100%)',
-                color: '#fef3c7',
+                border: '1px solid rgba(96, 165, 250, 0.45)',
+                background: 'linear-gradient(135deg, rgba(30, 64, 175, 0.35) 0%, rgba(37, 99, 235, 0.25) 50%, rgba(14, 116, 144, 0.3) 100%)',
+                color: '#f0f9ff',
                 fontWeight: 700,
                 fontSize: '0.88rem',
                 cursor: 'pointer',
@@ -801,24 +801,26 @@ export function AuthGate({ onAuthenticated, onStartAuthTransition, onStartGuestS
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '0.65rem',
-                boxShadow: '0 4px 18px rgba(245, 158, 11, 0.18)',
+                boxShadow: '0 4px 20px rgba(37, 99, 235, 0.25), inset 0 0 12px rgba(56, 189, 248, 0.1)',
                 transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)'
-                e.currentTarget.style.boxShadow = '0 6px 24px rgba(245, 158, 11, 0.35)'
-                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.35) 100%)'
+                e.currentTarget.style.boxShadow = '0 6px 26px rgba(37, 99, 235, 0.45), inset 0 0 16px rgba(56, 189, 248, 0.15)'
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(30, 64, 175, 0.5) 0%, rgba(37, 99, 235, 0.4) 50%, rgba(14, 116, 144, 0.45) 100%)'
+                e.currentTarget.style.borderColor = 'rgba(147, 197, 253, 0.75)'
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'none'
-                e.currentTarget.style.boxShadow = '0 4px 18px rgba(245, 158, 11, 0.18)'
-                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(217, 119, 6, 0.22) 100%)'
+                e.currentTarget.style.boxShadow = '0 4px 20px rgba(37, 99, 235, 0.25), inset 0 0 12px rgba(56, 189, 248, 0.1)'
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(30, 64, 175, 0.35) 0%, rgba(37, 99, 235, 0.25) 50%, rgba(14, 116, 144, 0.3) 100%)'
+                e.currentTarget.style.borderColor = 'rgba(96, 165, 250, 0.45)'
               }}
             >
-              <span style={{ fontSize: '1.1rem' }}>🎭</span>
+              <span style={{ fontSize: '1.2rem' }}>🎭</span>
               <div style={{ textAlign: 'left' }}>
-                <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>Enter as Guest (Sandbox Mode)</div>
-                <div style={{ fontSize: '0.7rem', color: '#fde68a', fontWeight: 400 }}>
+                <div style={{ fontWeight: 700, fontSize: '0.86rem', color: '#e0f2fe' }}>Enter as Guest (Sandbox Mode)</div>
+                <div style={{ fontSize: '0.71rem', color: '#7dd3fc', fontWeight: 500 }}>
                   Upload your own files • Persists on refresh • Wiped when you leave
                 </div>
               </div>

@@ -666,10 +666,10 @@ export default function App() {
                   onClick={handleStartGuestSandbox}
                   title="Upload your own documents and test without signing in"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.3) 100%)',
-                    border: '1px solid rgba(245, 158, 11, 0.45)',
+                    background: 'linear-gradient(135deg, rgba(30, 64, 175, 0.35) 0%, rgba(37, 99, 235, 0.3) 50%, rgba(14, 116, 144, 0.35) 100%)',
+                    border: '1px solid rgba(96, 165, 250, 0.5)',
                     borderRadius: '8px',
-                    color: '#fef3c7',
+                    color: '#f0f9ff',
                     padding: '0.38rem 0.85rem',
                     fontSize: '0.8rem',
                     fontWeight: 700,
@@ -677,22 +677,24 @@ export default function App() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.4rem',
-                    boxShadow: '0 2px 10px rgba(245, 158, 11, 0.2)',
+                    boxShadow: '0 2px 12px rgba(37, 99, 235, 0.25), inset 0 0 10px rgba(56, 189, 248, 0.08)',
                     transition: 'all 0.15s ease',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-1px)'
-                    e.currentTarget.style.boxShadow = '0 4px 14px rgba(245, 158, 11, 0.35)'
-                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(217, 119, 6, 0.45) 100%)'
+                    e.currentTarget.style.boxShadow = '0 4px 18px rgba(37, 99, 235, 0.45)'
+                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(30, 64, 175, 0.5) 0%, rgba(37, 99, 235, 0.45) 50%, rgba(14, 116, 144, 0.45) 100%)'
+                    e.currentTarget.style.borderColor = 'rgba(147, 197, 253, 0.75)'
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'none'
-                    e.currentTarget.style.boxShadow = '0 2px 10px rgba(245, 158, 11, 0.2)'
-                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.3) 100%)'
+                    e.currentTarget.style.boxShadow = '0 2px 12px rgba(37, 99, 235, 0.25)'
+                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(30, 64, 175, 0.35) 0%, rgba(37, 99, 235, 0.3) 50%, rgba(14, 116, 144, 0.35) 100%)'
+                    e.currentTarget.style.borderColor = 'rgba(96, 165, 250, 0.5)'
                   }}
                 >
-                  <span>🎭</span>
-                  <span>Try Guest Sandbox</span>
+                  <span style={{ fontSize: '0.95rem' }}>🎭</span>
+                  <span style={{ color: '#e0f2fe' }}>Try Guest Sandbox</span>
                 </button>
 
                 <button
@@ -732,12 +734,13 @@ export default function App() {
                   title="Guest Sandbox Session"
                   style={{
                     fontSize: '0.78rem',
-                    color: '#fef3c7',
-                    background: 'rgba(245, 158, 11, 0.15)',
-                    border: '1px solid rgba(245, 158, 11, 0.35)',
+                    color: '#bae6fd',
+                    background: 'rgba(30, 64, 175, 0.3)',
+                    border: '1px solid rgba(96, 165, 250, 0.45)',
                     borderRadius: '6px',
                     padding: '0.2rem 0.55rem',
                     fontWeight: 600,
+                    boxShadow: '0 0 10px rgba(37, 99, 235, 0.2)',
                   }}
                 >
                   🎭 Guest Sandbox
@@ -746,10 +749,10 @@ export default function App() {
                 <button
                   onClick={() => setShowAuthModal(true)}
                   style={{
-                    background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)',
-                    border: 'none',
+                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                    border: '1px solid rgba(147, 197, 253, 0.4)',
                     borderRadius: '8px',
-                    color: '#fff',
+                    color: '#ffffff',
                     padding: '0.35rem 0.75rem',
                     fontSize: '0.78rem',
                     fontWeight: 700,
@@ -757,7 +760,7 @@ export default function App() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.35rem',
-                    boxShadow: '0 2px 8px rgba(99, 102, 241, 0.4)',
+                    boxShadow: '0 2px 10px rgba(37, 99, 235, 0.4)',
                   }}
                 >
                   <span>✨</span>
@@ -895,21 +898,21 @@ export default function App() {
         {isGuestSandbox && (
           <div
             style={{
-              background: 'linear-gradient(90deg, rgba(245, 158, 11, 0.16) 0%, rgba(217, 119, 6, 0.22) 50%, rgba(245, 158, 11, 0.16) 100%)',
-              borderBottom: '1px solid rgba(245, 158, 11, 0.35)',
+              background: 'linear-gradient(90deg, rgba(15, 35, 85, 0.85) 0%, rgba(29, 78, 216, 0.45) 50%, rgba(14, 116, 144, 0.55) 100%)',
+              borderBottom: '1px solid rgba(96, 165, 250, 0.4)',
               padding: '0.45rem 1.5rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               flexWrap: 'wrap',
               gap: '0.75rem',
-              boxShadow: '0 2px 10px rgba(245, 158, 11, 0.1)',
+              boxShadow: '0 2px 12px rgba(29, 78, 216, 0.2), inset 0 0 10px rgba(56, 189, 248, 0.06)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#fef3c7' }}>
-              <span style={{ fontSize: '0.95rem' }}>🎭</span>
-              <span style={{ fontWeight: 700, color: '#fde68a' }}>Guest Sandbox Mode:</span>
-              <span style={{ color: '#fed7aa' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', fontSize: '0.82rem', color: '#f0f9ff' }}>
+              <span style={{ fontSize: '1rem' }}>🎭</span>
+              <span style={{ fontWeight: 700, color: '#bae6fd' }}>Guest Sandbox Mode:</span>
+              <span style={{ color: '#93c5fd' }}>
                 Upload files, chat, and test knowledge graphs freely. Your workspace persists across page refresh and is wiped clean when you leave.
               </span>
             </div>
@@ -917,14 +920,15 @@ export default function App() {
               <button
                 onClick={() => setShowAuthModal(true)}
                 style={{
-                  background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)',
-                  color: '#fff',
-                  border: 'none',
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  color: '#ffffff',
+                  border: '1px solid rgba(147, 197, 253, 0.4)',
                   borderRadius: '6px',
-                  padding: '0.25rem 0.65rem',
+                  padding: '0.28rem 0.75rem',
                   fontSize: '0.74rem',
                   fontWeight: 700,
                   cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.4)',
                 }}
               >
                 💾 Sign Up to Save
@@ -932,11 +936,11 @@ export default function App() {
               <button
                 onClick={handleEndGuestSession}
                 style={{
-                  background: 'rgba(239, 68, 68, 0.2)',
+                  background: 'rgba(239, 68, 68, 0.18)',
                   color: '#fca5a5',
-                  border: '1px solid rgba(239, 68, 68, 0.4)',
+                  border: '1px solid rgba(239, 68, 68, 0.35)',
                   borderRadius: '6px',
-                  padding: '0.25rem 0.65rem',
+                  padding: '0.28rem 0.75rem',
                   fontSize: '0.74rem',
                   fontWeight: 600,
                   cursor: 'pointer',
