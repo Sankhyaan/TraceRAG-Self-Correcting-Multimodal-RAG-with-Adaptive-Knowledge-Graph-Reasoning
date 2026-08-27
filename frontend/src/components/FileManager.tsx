@@ -379,17 +379,6 @@ export const FileManager: React.FC<FileManagerProps> = ({
           boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontSize: '1rem' }}>🧭</span>
-          <div>
-            <h4 style={{ margin: 0, fontSize: '0.86rem', fontWeight: 700, color: '#f8fafc', letterSpacing: '-0.01em' }}>
-              Multimodal Ingest Workspace & Exploration Guide
-            </h4>
-            <p style={{ margin: '0.1rem 0 0 0', fontSize: '0.72rem', color: '#94a3b8' }}>
-              These files are transcribed, OCR-extracted, and indexed into vectors & knowledge graphs. Explore next steps:
-            </p>
-          </div>
-        </div>
 
         {/* Guest Demo Mode & Sandbox Mode Explanatory Notices */}
         {isGuest && (
