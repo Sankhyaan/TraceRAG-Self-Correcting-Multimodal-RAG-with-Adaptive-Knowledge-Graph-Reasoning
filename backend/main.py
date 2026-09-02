@@ -83,9 +83,27 @@ def root():
     }
 
 
+async def _qdrant_periodic_heartbeat():
+    """Background task: periodically queries Qdrant every 12 hours to prevent free-tier suspension."""
+    import asyncio
+    while True:
+        try:
+            await asyncio.sleep(12 * 3600)  # Every 12 hours
+            if settings.qdrant_url:
+                from qdrant_client import QdrantClient
+                q_client = QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key, timeout=10)
+                q_client.get_collections()
+                logger.info("⚡ Periodic 12-hour Qdrant heartbeat completed successfully.")
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            logger.warning(f"Periodic Qdrant heartbeat notice: {e}")
+
+
 @app.on_event("startup")
 async def on_startup():
-    """Startup initialization: auto-heals storage and sends a keep-alive heartbeat to Qdrant."""
+    """Startup initialization: auto-heals storage, sends immediate Qdrant probe, and schedules periodic heartbeat."""
+    import asyncio
     try:
         from backend.demo_service import ensure_demo_files_in_storage
         ensure_demo_files_in_storage()
@@ -100,6 +118,9 @@ async def on_startup():
             logger.info(f"⚡ Qdrant cluster active & connected: {[c.name for c in collections.collections]}")
     except Exception as e:
         logger.warning(f"Qdrant startup heartbeat notice: {e}")
+
+    # Launch background periodic heartbeat
+    asyncio.create_task(_qdrant_periodic_heartbeat())
 
 
 @app.get("/health")
