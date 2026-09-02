@@ -83,14 +83,43 @@ def root():
     }
 
 
+@app.on_event("startup")
+async def on_startup():
+    """Startup initialization: auto-heals storage and sends a keep-alive heartbeat to Qdrant."""
+    try:
+        from backend.demo_service import ensure_demo_files_in_storage
+        ensure_demo_files_in_storage()
+    except Exception as e:
+        logger.warning(f"Demo file auto-heal notice: {e}")
+
+    try:
+        from qdrant_client import QdrantClient
+        if settings.qdrant_url:
+            q_client = QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key)
+            collections = q_client.get_collections()
+            logger.info(f"⚡ Qdrant cluster active & connected: {[c.name for c in collections.collections]}")
+    except Exception as e:
+        logger.warning(f"Qdrant startup heartbeat notice: {e}")
+
+
 @app.get("/health")
 def health_check():
-    """Health check endpoint displaying configuration readiness."""
+    """Health check endpoint displaying configuration readiness and vector DB status."""
     llm_configured = bool(
         (settings.llm_provider == "gemini" and settings.gemini_api_key)
         or (settings.llm_provider == "anthropic" and settings.anthropic_api_key)
     )
     auth_enabled = bool(settings.supabase_jwt_secret)
+
+    qdrant_status = "unconfigured"
+    try:
+        if settings.qdrant_url:
+            from qdrant_client import QdrantClient
+            q_client = QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key)
+            q_client.get_collections()
+            qdrant_status = "active"
+    except Exception as e:
+        qdrant_status = f"error: {str(e)[:50]}"
 
     return {
         "status": "healthy",
@@ -106,6 +135,7 @@ def health_check():
         "supabase_bucket": settings.supabase_storage_bucket,
         "auth_enabled": auth_enabled,
         "qdrant_url": settings.qdrant_url,
+        "qdrant_status": qdrant_status,
         "max_upload_size_mb": settings.max_upload_size_mb,
         "max_files_per_conversation": settings.max_files_per_conversation,
         "allowed_file_types": settings.allowed_file_types,
