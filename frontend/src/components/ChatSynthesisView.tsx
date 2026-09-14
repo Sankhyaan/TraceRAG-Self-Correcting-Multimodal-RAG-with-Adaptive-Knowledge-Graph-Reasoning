@@ -565,7 +565,7 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
                   )}
 
                   {/* Sleek Execution Pipeline Breadcrumb */}
-                  {!isUser && synthesis && (
+                  {!isUser && synthesis && !synthesis.routed_categories?.includes('conversational') && synthesis.citations && synthesis.citations.length > 0 && (
                     <div
                       style={{
                         marginBottom: '0.9rem',
@@ -589,7 +589,7 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
                         <span style={{ color: '#38bdf8', fontWeight: 600 }}>1. Intent & Routing</span>
                         <span style={{ color: '#475569', fontSize: '0.7rem' }}>➔</span>
-                        <span style={{ color: '#34d399', fontWeight: 600 }}>2. Hybrid Retrieval ({synthesis.citations?.length || 5})</span>
+                        <span style={{ color: '#34d399', fontWeight: 600 }}>2. Hybrid Retrieval</span>
                         <span style={{ color: '#475569', fontSize: '0.7rem' }}>➔</span>
                         <span style={{ color: '#c084fc', fontWeight: 600 }}>3. Graph Multi-Hop</span>
                         <span style={{ color: '#475569', fontSize: '0.7rem' }}>➔</span>

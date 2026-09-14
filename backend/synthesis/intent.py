@@ -117,13 +117,12 @@ def is_conversational_query(
     return res.get("is_conversational", False) or res.get("intent_type") == "CASUAL_CONVERSATION"
 
 
-CONVERSATIONAL_SYSTEM_PROMPT = """You are Trace, a friendly, highly intelligent, conversational AI assistant with the natural language abilities and charm of ChatGPT, Gemini, and Claude.
+CONVERSATIONAL_SYSTEM_PROMPT = """You are Trace, a friendly, intelligent, and natural conversational AI assistant.
 
-When conversing:
-1. Speak naturally, warmly, and helpfully like an articulate human friend and expert.
-2. Remember the ongoing conversation context and answer seamlessly.
-3. If the user asks general questions, chat casually, share interesting thoughts, or answer their questions directly.
-4. If relevant, remind them that you can also search and verify insights from any files they've uploaded in the session.
+Guidelines:
+1. For simple greetings (like "hi", "hello", "hey", "how are you"), provide a clean, natural, friendly, and concise greeting response (e.g., "Hello! How can I help you today?"). Never summarize previous discussion topics, never recite filenames, and never give long canned intros unless explicitly requested.
+2. For general questions or casual chat, answer naturally and concisely like a thoughtful human colleague.
+3. Only discuss specific documents, files, or technical domain topics if the user explicitly asks about them.
 """
 
 
@@ -136,28 +135,24 @@ def generate_conversational_response(
     Generates a natural, friendly conversational response for chit-chat, greetings, and general dialogue.
     """
     settings = get_settings()
+    clean_q = query.strip().lower()
+    is_simple_greeting = clean_q in [
+        "hi", "hello", "hey", "hi there", "hello there", "good morning",
+        "good afternoon", "good evening", "howdy", "sup", "yo", "hey there"
+    ]
 
-    file_count = 0
-    file_names = []
-    try:
-        files = storage_service.list_files(conversation_id)
-        file_count = len(files)
-        file_names = [f.filename for f in files[:4]]
-    except Exception:
-        pass
+    if is_simple_greeting and (not conversation_history or len(conversation_history) <= 1):
+        return "Hello! How can I help you today? Feel free to ask any questions about your documents, search across your data, or let me know what you'd like to explore."
 
     history_str = ""
-    if conversation_history:
-        recent = conversation_history[-6:]
+    if conversation_history and not is_simple_greeting:
+        recent = conversation_history[-4:]
         history_str = "Conversation History:\n" + "\n".join(
             f"{'User' if m.get('role') == 'user' else 'Trace'}: {m.get('content', '')}"
             for m in recent
         ) + "\n\n"
 
     context_msg = f"{history_str}User message: \"{query}\"\n"
-    if file_count > 0:
-        names_str = ", ".join(f"'{name}'" for name in file_names)
-        context_msg += f"\nSession files: {file_count} uploaded ({names_str})."
 
     if settings.gemini_api_key:
         try:
@@ -166,11 +161,11 @@ def generate_conversational_response(
 
             client = genai.Client(api_key=settings.gemini_api_key)
             resp = client.models.generate_content(
-                model="gemini-3.5-flash-lite",
+                model="gemini-2.5-flash",
                 contents=f"{CONVERSATIONAL_SYSTEM_PROMPT}\n\n{context_msg}",
                 config=types.GenerateContentConfig(
                     temperature=0.7,
-                    max_output_tokens=400,
+                    max_output_tokens=300,
                 ),
             )
             if resp.text and resp.text.strip():
@@ -178,4 +173,4 @@ def generate_conversational_response(
         except Exception as e:
             logger.warning(f"Gemini conversational generation failed: {e}")
 
-    return "Hello! I'm here with you. Feel free to ask me anything or explore any of your uploaded files."
+    return "Hello! How can I help you today? Feel free to ask any questions or explore your documents."

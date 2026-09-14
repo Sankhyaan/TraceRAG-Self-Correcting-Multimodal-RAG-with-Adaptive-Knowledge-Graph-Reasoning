@@ -89,28 +89,19 @@ export const CANONICAL_DEMO_MESSAGES: PersistedMessage[] = [
     id: 'msg_a_demo_0',
     conversation_id: 'conv_demo',
     role: 'assistant',
-    content: `Hey there! Welcome to the **VoltBus Engineering & Route 101 Operations** demo workspace.
-
-I have indexed and verified your complete multimodal repository:
-* 📄 **VoltBus Master Operations & Engineering Brief** (\`.pdf\`)
-* 🖼️ **VoltBus V3 Hardware & Blueprint Schematic** (\`.png\`)
-* 🗺️ **Route 101 Transit Corridor & Station Network Map** (\`.png\`)
-* 📊 **Thermal Safety & Dynamic Throttle Flowchart** (\`.png\`)
-* 🎵 **Incident Post-Mortem & Maintenance Audio Debrief** (\`.mp3\`)
-
-Every technical claim is validated by our **Self-Correcting Critic Engine** with grounded multimodal citations and knowledge graph relation proofs. Feel free to click any of the suggested inquiries below or ask any custom question!`,
+    content: 'Hello! How can I help you today? Feel free to ask any questions about your documents, search across your data, or let me know what you would like to explore.',
     citations: [],
     critic_info: {
       confidence: 'high',
-      reason: 'Direct conversational greeting with multimodal repository grounding and context overview.',
+      reason: 'Direct conversational greeting.',
     },
     groundedness_score: 1.0,
     retry_info: {
       retried: false,
     },
     graph_hops: [],
-    graph_entities: ['VoltBus V3', 'Route 101', 'Depot-Alpha', 'Depot-Gamma'],
-    graph_context_text: '### 🕸️ Knowledge Graph Overview:\n• **VoltBus V3** ➔ `OPERATES_ON` ➔ **Route 101 Transit Corridor**\n• **Route 101** ➔ `MANAGED_BY` ➔ **Depot-Alpha** & **Depot-Gamma**',
+    graph_entities: [],
+    graph_context_text: '',
     created_at: '2026-08-23T00:00:03Z',
   },
 
