@@ -1154,6 +1154,71 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Quick Inquiries / Suggested Demo Questions Bar */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.45rem',
+          overflowX: 'auto',
+          padding: '0.2rem 0.25rem',
+          scrollbarWidth: 'none',
+          flexShrink: 0,
+        }}
+      >
+        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+          <span>💡</span> Quick Inquiries:
+        </span>
+        {[
+          { label: 'VoltBus V3 Hardware & Stop 7 Incident', query: 'What hardware components and thermal thresholds govern the VoltBus V3 battery system, and what occurred during the July 12 incident at Stop 7?' },
+          { label: 'Depot-Gamma SOP & Imbalance Findings', query: 'What maintenance protocol is executed at Depot-Gamma following a thermal warning, and what were the findings for Unit #09?' },
+          { label: 'Thermal Safety States 0-3 Protocol', query: 'What happens in State 1 Warning vs State 2 Critical vs State 3 Emergency according to the thermal safety flowchart?' },
+          { label: 'Facility Roles: Depot-Alpha vs Gamma', query: 'How are facility duties divided across the transit corridor between Depot-Alpha and Depot-Gamma?' },
+        ].map((item, idx) => (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => handleSend(item.query)}
+            disabled={loading}
+            style={{
+              background: 'rgba(255, 255, 255, 0.04)',
+              border: '1px solid rgba(99, 102, 241, 0.3)',
+              borderRadius: '999px',
+              padding: '0.28rem 0.7rem',
+              color: '#e2e8f0',
+              fontSize: '0.74rem',
+              fontWeight: 600,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              whiteSpace: 'nowrap',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              transition: 'all 0.15s ease',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) {
+                e.currentTarget.style.background = 'rgba(99, 102, 241, 0.25)'
+                e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.75)'
+                e.currentTarget.style.color = '#ffffff'
+                e.currentTarget.style.transform = 'translateY(-1px)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)'
+                e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)'
+                e.currentTarget.style.color = '#e2e8f0'
+                e.currentTarget.style.transform = 'none'
+              }
+            }}
+          >
+            <span>💬</span>
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </div>
+
       {/* Input Area - Ultra-Modern, Colorful & Shiny Interactive Search Bar */}
       <form
         onSubmit={handleSend}
