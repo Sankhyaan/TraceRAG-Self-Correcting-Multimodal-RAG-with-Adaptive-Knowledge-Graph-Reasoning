@@ -21,12 +21,11 @@ export const FileManager: React.FC<FileManagerProps> = ({
 }) => {
 
 
-  const isDemoBlocked = (!isGuest && conversationId === 'conv_demo') || !conversationId
-  const initialCache = isDemoBlocked ? null : getCachedFiles(conversationId, 'all')
+  const initialCache = conversationId ? getCachedFiles(conversationId, 'all') : null
   const [files, setFiles] = useState<FileItem[]>(() => initialCache?.files || [])
   const [counts, setCounts] = useState(() => initialCache?.by_type || { document: 0, image: 0, audio: 0, video: 0 })
   const [filterType, setFilterType] = useState<string>('all')
-  const [loading, setLoading] = useState(() => !initialCache)
+  const [loading, setLoading] = useState(() => !initialCache && Boolean(conversationId))
   const [uploading, setUploading] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const [showClearModal, setShowClearModal] = useState(false)
@@ -52,7 +51,7 @@ export const FileManager: React.FC<FileManagerProps> = ({
   }
 
   const loadFiles = async (silent: boolean = false) => {
-    if (!conversationId || (!isGuest && conversationId === 'conv_demo')) {
+    if (!conversationId) {
       if (!silent) setLoading(false)
       setFiles([])
       setCounts({ document: 0, image: 0, audio: 0, video: 0 })
@@ -67,14 +66,23 @@ export const FileManager: React.FC<FileManagerProps> = ({
       setCounts(data.by_type)
       onFileCountChange?.(data.total)
     } catch (err: any) {
-      if (!silent) setError(err.message || 'Failed to load files from server.')
+      if (conversationId === 'conv_demo') {
+        const cached = getCachedFiles('conv_demo', filterType)
+        if (cached) {
+          setFiles(cached.files)
+          setCounts(cached.by_type)
+          onFileCountChange?.(cached.total)
+        }
+      } else {
+        if (!silent) setError(err.message || 'Failed to load files from server.')
+      }
     } finally {
       if (!silent) setLoading(false)
     }
   }
 
   useEffect(() => {
-    if (!conversationId || (!isGuest && conversationId === 'conv_demo')) {
+    if (!conversationId) {
       setFiles([])
       setCounts({ document: 0, image: 0, audio: 0, video: 0 })
       onFileCountChange?.(0)

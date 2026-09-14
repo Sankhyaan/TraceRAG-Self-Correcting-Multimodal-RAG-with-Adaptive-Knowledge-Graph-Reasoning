@@ -132,7 +132,20 @@ def list_files(
         if not conversation_id:
             return {"conversation_id": "", "files": [], "total": 0, "by_type": {"document": 0, "image": 0, "audio": 0, "video": 0}}
 
-        all_files = storage_service.list_files(conversation_id=conversation_id)
+        all_files = []
+        try:
+            all_files = storage_service.list_files(conversation_id=conversation_id)
+        except Exception as db_err:
+            logger.warning(f"Notice querying files for conversation '{conversation_id}': {db_err}")
+            if conversation_id == "conv_demo":
+                from backend.demo_service import get_demo_files
+                all_files = get_demo_files()
+            else:
+                raise
+
+        if (not all_files) and conversation_id == "conv_demo":
+            from backend.demo_service import get_demo_files
+            all_files = get_demo_files()
 
         # Normalize status if status column not populated
         for f in all_files:
@@ -146,7 +159,7 @@ def list_files(
             "video": sum(1 for f in all_files if f.get("file_type") == "video"),
         }
 
-        if file_type:
+        if file_type and file_type != "all":
             filtered_files = [f for f in all_files if f.get("file_type") == file_type]
         else:
             filtered_files = all_files
@@ -158,6 +171,22 @@ def list_files(
             "by_type": by_type,
         }
     except Exception as e:
+        if conversation_id == "conv_demo":
+            from backend.demo_service import get_demo_files
+            demo_f = get_demo_files()
+            if file_type and file_type != "all":
+                demo_f = [f for f in demo_f if f.get("file_type") == file_type]
+            return {
+                "conversation_id": "conv_demo",
+                "files": demo_f,
+                "total": len(demo_f),
+                "by_type": {
+                    "document": sum(1 for f in demo_f if f.get("file_type") == "document"),
+                    "image": sum(1 for f in demo_f if f.get("file_type") == "image"),
+                    "audio": sum(1 for f in demo_f if f.get("file_type") == "audio"),
+                    "video": sum(1 for f in demo_f if f.get("file_type") == "video"),
+                },
+            }
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -167,9 +196,27 @@ def get_extracted_content(file_id: str):
     """
     Retrieves the full extracted text, timestamps, and captions for a file.
     """
+    from backend.demo_service import get_demo_file_by_id
+
     try:
-        record = storage_service.get_file(file_id)
+        record = None
+        try:
+            record = storage_service.get_file(file_id)
+        except Exception as e:
+            logger.warning(f"Notice fetching file record for extracted text: {e}")
+
         if not record:
+            demo_rec = get_demo_file_by_id(file_id)
+            if demo_rec:
+                return {
+                    "file_id": demo_rec["id"],
+                    "filename": demo_rec.get("filename"),
+                    "file_type": demo_rec.get("file_type"),
+                    "status": "done",
+                    "extracted_text": demo_rec.get("extracted_text"),
+                    "extraction_error": None,
+                    "uploaded_at": demo_rec.get("uploaded_at"),
+                }
             raise HTTPException(status_code=404, detail="File not found")
 
         status = record.get("status") or ("done" if record.get("extracted_text") else "pending")
@@ -185,6 +232,17 @@ def get_extracted_content(file_id: str):
     except HTTPException:
         raise
     except Exception as e:
+        demo_rec = get_demo_file_by_id(file_id)
+        if demo_rec:
+            return {
+                "file_id": demo_rec["id"],
+                "filename": demo_rec.get("filename"),
+                "file_type": demo_rec.get("file_type"),
+                "status": "done",
+                "extracted_text": demo_rec.get("extracted_text"),
+                "extraction_error": None,
+                "uploaded_at": demo_rec.get("uploaded_at"),
+            }
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -227,18 +285,50 @@ def get_file_url(
     """
     Generates a secure temporary signed URL for viewing/downloading the file.
     """
+    from backend.demo_service import get_demo_file_by_id
+
     try:
-        record = storage_service.get_file(file_id)
+        record = None
+        try:
+            record = storage_service.get_file(file_id)
+        except Exception as e:
+            logger.warning(f"Notice getting signed URL from DB: {e}")
+
         if not record:
+            demo_rec = get_demo_file_by_id(file_id)
+            if demo_rec:
+                return {
+                    "file_id": demo_rec["id"],
+                    "filename": demo_rec.get("filename"),
+                    "file_type": demo_rec.get("file_type"),
+                    "signed_url": demo_rec.get("storage_url", f"/demo_files/{demo_rec['filename']}"),
+                }
             raise HTTPException(status_code=404, detail="File not found")
 
-        signed_url = storage_service.get_signed_url(file_id, expires_in=expires_in)
+        signed_url = ""
+        try:
+            signed_url = storage_service.get_signed_url(file_id, expires_in=expires_in)
+        except Exception:
+            signed_url = record.get("storage_url") or f"/demo_files/{record.get('filename')}"
+
         return {
             "file_id": file_id,
             "filename": record.get("filename"),
             "file_type": record.get("file_type"),
             "signed_url": signed_url,
         }
+    except HTTPException:
+        raise
+    except Exception as e:
+        demo_rec = get_demo_file_by_id(file_id)
+        if demo_rec:
+            return {
+                "file_id": demo_rec["id"],
+                "filename": demo_rec.get("filename"),
+                "file_type": demo_rec.get("file_type"),
+                "signed_url": demo_rec.get("storage_url", f"/demo_files/{demo_rec['filename']}"),
+            }
+        raise HTTPException(status_code=500, detail=str(e))
     except HTTPException:
         raise
     except Exception as e:
@@ -356,9 +446,20 @@ def stream_file(file_id: str):
     Returns a redirect to the Supabase signed URL, or serves local file fallback.
     """
     import os
+    from backend.demo_service import get_demo_file_by_id
 
     try:
-        record = storage_service.get_file(file_id)
+        record = None
+        try:
+            record = storage_service.get_file(file_id)
+        except Exception as e:
+            logger.warning(f"Notice getting file record for streaming: {e}")
+
+        if not record:
+            demo_rec = get_demo_file_by_id(file_id)
+            if demo_rec:
+                record = demo_rec
+
         if not record:
             raise HTTPException(status_code=404, detail="File not found")
 
@@ -372,14 +473,20 @@ def stream_file(file_id: str):
             return FastFileResponse(demo_local, media_type=mime_type, filename=filename)
 
         # Generate signed URL from the correct bucket
-        sb = get_supabase()
-        sign_res = sb.storage.from_(storage_service.bucket).create_signed_url(storage_path, 3600)
-        signed_url = sign_res.get("signedURL") or sign_res.get("signed_url") or sign_res.get("signedUrl")
+        try:
+            sb = get_supabase()
+            sign_res = sb.storage.from_(storage_service.bucket).create_signed_url(storage_path, 3600)
+            signed_url = sign_res.get("signedURL") or sign_res.get("signed_url") or sign_res.get("signedUrl")
 
-        if not signed_url:
-            raise HTTPException(status_code=500, detail="Could not generate signed URL")
+            if signed_url:
+                return RedirectResponse(url=signed_url, status_code=302)
+        except Exception as sign_err:
+            logger.warning(f"Notice generating signed URL for streaming '{filename}': {sign_err}")
 
-        return RedirectResponse(url=signed_url, status_code=302)
+        if record.get("storage_url", "").startswith("http") or record.get("storage_url", "").startswith("/"):
+            return RedirectResponse(url=record["storage_url"], status_code=302)
+
+        raise HTTPException(status_code=404, detail="Could not resolve media stream URL")
     except HTTPException:
         raise
     except Exception as e:
@@ -393,9 +500,20 @@ def get_thumbnail(file_id: str):
     For images: redirects to the Supabase signed URL or serves local file.
     """
     import os
+    from backend.demo_service import get_demo_file_by_id
 
     try:
-        record = storage_service.get_file(file_id)
+        record = None
+        try:
+            record = storage_service.get_file(file_id)
+        except Exception as e:
+            logger.warning(f"Notice getting file record for thumbnail: {e}")
+
+        if not record:
+            demo_rec = get_demo_file_by_id(file_id)
+            if demo_rec:
+                record = demo_rec
+
         if not record:
             raise HTTPException(status_code=404, detail="File not found")
 
@@ -413,14 +531,20 @@ def get_thumbnail(file_id: str):
         if os.path.exists(demo_local):
             return FastFileResponse(demo_local, media_type=mime_type, filename=filename)
 
-        sb = get_supabase()
-        sign_res = sb.storage.from_(storage_service.bucket).create_signed_url(storage_path, 3600)
-        signed_url = sign_res.get("signedURL") or sign_res.get("signed_url") or sign_res.get("signedUrl")
+        try:
+            sb = get_supabase()
+            sign_res = sb.storage.from_(storage_service.bucket).create_signed_url(storage_path, 3600)
+            signed_url = sign_res.get("signedURL") or sign_res.get("signed_url") or sign_res.get("signedUrl")
 
-        if not signed_url:
-            raise HTTPException(status_code=404, detail="Could not generate thumbnail URL")
+            if signed_url:
+                return RedirectResponse(url=signed_url, status_code=302)
+        except Exception as sign_err:
+            logger.warning(f"Notice generating signed URL for thumbnail '{filename}': {sign_err}")
 
-        return RedirectResponse(url=signed_url, status_code=302)
+        if record.get("storage_url", "").startswith("http") or record.get("storage_url", "").startswith("/"):
+            return RedirectResponse(url=record["storage_url"], status_code=302)
+
+        raise HTTPException(status_code=404, detail="Could not generate thumbnail URL")
     except HTTPException:
         raise
     except Exception as e:
