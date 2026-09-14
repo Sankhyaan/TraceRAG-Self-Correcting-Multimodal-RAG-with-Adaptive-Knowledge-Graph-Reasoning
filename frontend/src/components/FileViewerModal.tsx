@@ -241,28 +241,30 @@ export const FileViewerModal: React.FC<FileViewerModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(0, 0, 0, 0.85)',
-        backdropFilter: 'blur(8px)',
+        background: 'rgba(5, 8, 15, 0.88)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 1000,
+        zIndex: 99999,
         padding: '1.5rem',
+        animation: 'fadeIn 0.15s ease-out',
       }}
       onClick={onClose}
     >
       <div
         style={{
-          background: 'var(--bg-secondary)',
-          border: '1px solid var(--border-color)',
+          background: '#0a0e17',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
           borderRadius: '16px',
-          width: '90%',
-          maxWidth: '960px',
-          height: '85vh',
+          width: '92%',
+          maxWidth: '980px',
+          height: '86vh',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
+          boxShadow: '0 30px 60px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.05)',
         }}
         onClick={(e) => e.stopPropagation()}
       >

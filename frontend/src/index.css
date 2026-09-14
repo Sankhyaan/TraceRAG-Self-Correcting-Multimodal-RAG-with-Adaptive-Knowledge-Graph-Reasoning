@@ -205,34 +205,25 @@ body {
 }
 
 
-/* Breathing Neon Pink Pulse Animation for Inspect Citations button */
-@keyframes neonPinkPulse {
-  0% {
-    box-shadow: 0 0 5px rgba(244, 63, 94, 0.25), 0 0 10px rgba(236, 72, 153, 0.15);
-    border-color: rgba(244, 63, 94, 0.4);
+
+/* Modal and element smooth entrance */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
-  50% {
-    box-shadow: 0 0 18px rgba(244, 63, 94, 0.85), 0 0 32px rgba(236, 72, 153, 0.55), inset 0 0 12px rgba(244, 63, 94, 0.25);
-    border-color: rgba(244, 63, 94, 1);
-  }
-  100% {
-    box-shadow: 0 0 5px rgba(244, 63, 94, 0.25), 0 0 10px rgba(236, 72, 153, 0.15);
-    border-color: rgba(244, 63, 94, 0.4);
+  to {
+    opacity: 1;
   }
 }
 
-@keyframes pinkDotPulse {
-  0% {
-    transform: scale(0.85);
-    opacity: 0.6;
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(8px);
   }
-  50% {
-    transform: scale(1.35);
+  to {
     opacity: 1;
-    filter: drop-shadow(0 0 6px #f43f5e);
-  }
-  100% {
-    transform: scale(0.85);
-    opacity: 0.6;
+    transform: scale(1) translateY(0);
   }
 }
+
