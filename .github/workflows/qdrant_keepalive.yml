@@ -17,7 +17,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
 
       - name: Install dependencies
         run: |
@@ -26,7 +25,7 @@ jobs:
 
       - name: Run Qdrant Keep-Alive Probe
         env:
-          QDRANT_URL: ${{ secrets.QDRANT_URL || 'https://f1dd0814-91dd-44d8-9ace-a8453c7204a4.ca-central-1-0.aws.cloud.qdrant.io:6333' }}
+          QDRANT_URL: ${{ secrets.QDRANT_URL }}
           QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
         run: |
           python scripts/qdrant_keepalive.py
