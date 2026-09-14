@@ -110,9 +110,23 @@ class MessageStorage:
         if os.path.exists(loc_path):
             try:
                 with open(loc_path, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                    data = json.load(f)
+                    if data:
+                        return data
             except Exception:
                 pass
+
+        # 3. Fallback for conv_demo to demo_messages_seeded.json
+        if conv_id == "conv_demo":
+            seeded_path = os.path.join(os.path.dirname(DATA_DIR), "demo_messages_seeded.json")
+            if os.path.exists(seeded_path):
+                try:
+                    with open(seeded_path, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        if data:
+                            return data
+                except Exception:
+                    pass
         return []
 
     @classmethod
