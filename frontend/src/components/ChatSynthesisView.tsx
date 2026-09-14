@@ -784,69 +784,41 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
                       }}
                     >
                       {(() => {
-                        const cleanAns = (synthesis.answer || msg.content || '').toLowerCase()
-                        const cleanQuery = (messages.find(m => m.role === 'user')?.content || '').toLowerCase()
-
-                        const isMatch = (entityName: string) => {
-                          if (!entityName) return false
-                          const eLower = entityName.toLowerCase().trim()
-                          if (cleanAns.includes(eLower) || cleanQuery.includes(eLower)) return true
-                          const eClean = eLower.replace(/[^\w\s]/g, '').trim()
-                          if (eClean.length >= 3 && (cleanAns.includes(eClean) || cleanQuery.includes(eClean))) return true
-                          const nums = entityName.replace(/\D/g, '')
-                          if (nums.length >= 4 && cleanAns.replace(/\D/g, '').includes(nums)) return true
-                          return false
-                        }
-
                         const seenPairs = new Set<string>()
-                        const directHops = (synthesis.graph_hops || []).filter((h: any) => {
-                          if (!h.from_node || !h.to_node || !h.relation) return false
-                          if (h.relation.startsWith('INVERSE_')) return false
-
-                          const uNorm = h.from_node.toLowerCase().trim()
-                          const vNorm = h.to_node.toLowerCase().trim()
-                          const pairKey = [uNorm, vNorm].sort().join('::')
+                        const displayHops = (synthesis.graph_hops || []).filter((h) => {
+                          const pairKey = `${(h.from_node || '').trim()}::${(h.relation || '').trim()}::${(h.to_node || '').trim()}`.toLowerCase()
                           if (seenPairs.has(pairKey)) return false
-
-                          const toInAns = isMatch(h.to_node)
-                          const fromInContext = isMatch(h.from_node)
-
-                          if (toInAns && fromInContext) {
-                            seenPairs.add(pairKey)
-                            return true
-                          }
-                          return false
+                          seenPairs.add(pairKey)
+                          return true
                         })
 
-                        const finalEntities: string[] = []
-                        directHops.forEach((h: any) => {
-                          if (h.from_node && !finalEntities.includes(h.from_node) && isMatch(h.from_node)) {
-                            finalEntities.push(h.from_node)
-                          }
-                          if (h.to_node && !finalEntities.includes(h.to_node) && isMatch(h.to_node)) {
-                            finalEntities.push(h.to_node)
-                          }
-                        })
+                        const hopEntities: string[] = Array.from(
+                          new Set([
+                            ...(synthesis.graph_entities || []),
+                            ...displayHops.map((h) => h.from_node),
+                            ...displayHops.map((h) => h.to_node),
+                          ])
+                        ).filter(Boolean)
 
                         return (
                           <>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.82rem', fontWeight: 700, color: '#c084fc' }}>
-                                <span>🕸️ Knowledge Graph Relations & Context</span>
-                                {directHops.length > 0 && (
-                                  <span style={{ fontSize: '0.7rem', color: '#e9d5ff', background: 'rgba(168, 85, 247, 0.25)', padding: '0.05rem 0.4rem', borderRadius: '4px', border: '1px solid rgba(168, 85, 247, 0.4)' }}>
-                                    {directHops.length} relation hop{directHops.length > 1 ? 's' : ''}
+                                <span>🕸️ Knowledge Graph Relations & Reasoning</span>
+                                {displayHops.length > 0 && (
+                                  <span style={{ fontSize: '0.7rem', color: '#e9d5ff', background: 'rgba(168, 85, 247, 0.25)', padding: '0.05rem 0.45rem', borderRadius: '4px', border: '1px solid rgba(168, 85, 247, 0.4)' }}>
+                                    {displayHops.length} entity relation{displayHops.length > 1 ? 's' : ''}
                                   </span>
                                 )}
                               </div>
-                              {finalEntities.length > 0 && (
+                              {hopEntities.length > 0 && (
                                 <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
                                   <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Entities:</span>
-                                  {finalEntities.map((ent, idx) => (
+                                  {hopEntities.map((ent: string, idx: number) => (
                                     <span
                                       key={idx}
                                       style={{
-                                        background: 'rgba(168, 85, 247, 0.25)',
+                                        background: 'rgba(168, 85, 247, 0.22)',
                                         color: '#e9d5ff',
                                         border: '1px solid rgba(168, 85, 247, 0.45)',
                                         borderRadius: '6px',
@@ -862,10 +834,10 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
                               )}
                             </div>
 
-                            {/* Traversed Relation Hops Visual List - Filtered to Direct Hops */}
-                            {directHops.length > 0 ? (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.15rem' }}>
-                                {directHops.map((hop, hIdx) => {
+                            {/* Traversed Relation Hops Visual List */}
+                            {displayHops.length > 0 ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginTop: '0.25rem' }}>
+                                {displayHops.map((hop, hIdx) => {
                                   const isAudio = hop.filename?.toLowerCase().endsWith('.mp3') || hop.filename?.toLowerCase().endsWith('.wav')
                                   const isVideo = hop.filename?.toLowerCase().endsWith('.mp4') || hop.filename?.toLowerCase().endsWith('.mov')
                                   const isImg = hop.filename?.toLowerCase().endsWith('.png') || hop.filename?.toLowerCase().endsWith('.jpg') || hop.filename?.toLowerCase().endsWith('.jpeg')
@@ -879,25 +851,20 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
                                         alignItems: 'center',
                                         gap: '0.5rem',
                                         fontSize: '0.78rem',
-                                        background: 'rgba(0, 0, 0, 0.35)',
-                                        padding: '0.5rem 0.8rem',
+                                        background: 'rgba(0, 0, 0, 0.4)',
+                                        padding: '0.45rem 0.75rem',
                                         borderRadius: '8px',
-                                        border: '1px solid rgba(168, 85, 247, 0.25)',
+                                        border: '1px solid rgba(168, 85, 247, 0.28)',
                                         flexWrap: 'wrap',
                                       }}
                                     >
                                       <strong style={{ color: '#e9d5ff' }}>{hop.from_node}</strong>
-                                      <span style={{ color: '#c084fc', fontSize: '0.7rem', background: 'rgba(168, 85, 247, 0.25)', padding: '0.12rem 0.45rem', borderRadius: '4px', fontWeight: 700, fontFamily: 'var(--font-mono, monospace)' }}>
+                                      <span style={{ color: '#c084fc', fontSize: '0.68rem', background: 'rgba(168, 85, 247, 0.25)', border: '1px solid rgba(168, 85, 247, 0.35)', padding: '0.1rem 0.45rem', borderRadius: '4px', fontWeight: 700, fontFamily: 'var(--font-mono, monospace)' }}>
                                         ➔ {hop.relation} ➔
                                       </span>
                                       <strong style={{ color: '#e9d5ff' }}>{hop.to_node}</strong>
-                                      {(hop as any).amount && (
-                                        <span style={{ fontSize: '0.7rem', color: '#34d399', background: 'rgba(52, 211, 153, 0.15)', border: '1px solid rgba(52, 211, 153, 0.35)', padding: '0.1rem 0.35rem', borderRadius: '4px', fontWeight: 600 }}>
-                                          💰 ${Number((hop as any).amount).toLocaleString()} {(hop as any).currency || 'USD'}
-                                        </span>
-                                      )}
                                       {hop.filename && (
-                                        <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontSize: '0.7rem' }}>
+                                        <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: '0.7rem' }}>
                                           {icon} {hop.filename} {hop.page_number ? `(p. ${hop.page_number})` : hop.timestamp ? `(⏱️ ${hop.timestamp})` : ''}
                                         </span>
                                       )}
@@ -906,8 +873,8 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
                                 })}
                               </div>
                             ) : synthesis.graph_context_text ? (
-                              <div style={{ fontSize: '0.78rem', color: '#cbd5e1', background: 'rgba(0, 0, 0, 0.25)', padding: '0.5rem 0.75rem', borderRadius: '6px' }}>
-                                {synthesis.graph_context_text}
+                              <div style={{ fontSize: '0.8rem', color: '#e2e8f0', background: 'rgba(0, 0, 0, 0.35)', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid rgba(168, 85, 247, 0.25)', lineHeight: 1.5 }}>
+                                <MarkdownRenderer content={synthesis.graph_context_text} onCitationClick={() => {}} />
                               </div>
                             ) : null}
                           </>
@@ -1171,9 +1138,10 @@ export const ChatSynthesisView: React.FC<ChatSynthesisViewProps> = ({ conversati
         </span>
         {[
           { label: 'VoltBus V3 Hardware & Stop 7 Incident', query: 'What hardware components and thermal thresholds govern the VoltBus V3 battery system, and what occurred during the July 12 incident at Stop 7?' },
-          { label: 'Depot-Gamma SOP & Imbalance Findings', query: 'What maintenance protocol is executed at Depot-Gamma following a thermal warning, and what were the findings for Unit #09?' },
-          { label: 'Thermal Safety States 0-3 Protocol', query: 'What happens in State 1 Warning vs State 2 Critical vs State 3 Emergency according to the thermal safety flowchart?' },
-          { label: 'Facility Roles: Depot-Alpha vs Gamma', query: 'How are facility duties divided across the transit corridor between Depot-Alpha and Depot-Gamma?' },
+          { label: 'Depot-Gamma SOP & Resistance Imbalance', query: 'What maintenance protocol is executed at Depot-Gamma following a thermal warning, and what were the findings for Unit #09?' },
+          { label: 'Thermal Safety Flowchart (States 0–3)', query: 'What operational actions distinguish State 1 Warning from State 2 Critical and State 3 Emergency in the thermal safety flowchart?' },
+          { label: 'Corridor Geography & Facility Roles', query: 'How are facility duties divided across the transit corridor between Depot-Alpha and Depot-Gamma?' },
+          { label: 'Blueprint Specs: Drivetrain & Sensors', query: 'What are the exact voltage, capacity, motor drivetrain, and sensor specifications shown on the VoltBus V3 schematic?' },
         ].map((item, idx) => (
           <button
             key={idx}

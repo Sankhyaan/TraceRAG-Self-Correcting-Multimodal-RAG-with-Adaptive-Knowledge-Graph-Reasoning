@@ -76,6 +76,45 @@ export async function createConversation(title?: string, id?: string): Promise<C
 
 
 export const CANONICAL_DEMO_MESSAGES: PersistedMessage[] = [
+  // Exchange 0: Greeting
+  {
+    id: 'msg_u_demo_0',
+    conversation_id: 'conv_demo',
+    role: 'user',
+    content: 'hi',
+    citations: [],
+    created_at: '2026-08-23T00:00:00Z',
+  },
+  {
+    id: 'msg_a_demo_0',
+    conversation_id: 'conv_demo',
+    role: 'assistant',
+    content: `Hey there! Welcome to the **VoltBus Engineering & Route 101 Operations** demo workspace.
+
+I have indexed and verified your complete multimodal repository:
+* 📄 **VoltBus Master Operations & Engineering Brief** (\`.pdf\`)
+* 🖼️ **VoltBus V3 Hardware & Blueprint Schematic** (\`.png\`)
+* 🗺️ **Route 101 Transit Corridor & Station Network Map** (\`.png\`)
+* 📊 **Thermal Safety & Dynamic Throttle Flowchart** (\`.png\`)
+* 🎵 **Incident Post-Mortem & Maintenance Audio Debrief** (\`.mp3\`)
+
+Every technical claim is validated by our **Self-Correcting Critic Engine** with grounded multimodal citations and knowledge graph relation proofs. Feel free to click any of the suggested inquiries below or ask any custom question!`,
+    citations: [],
+    critic_info: {
+      confidence: 'high',
+      reason: 'Direct conversational greeting with multimodal repository grounding and context overview.',
+    },
+    groundedness_score: 1.0,
+    retry_info: {
+      retried: false,
+    },
+    graph_hops: [],
+    graph_entities: ['VoltBus V3', 'Route 101', 'Depot-Alpha', 'Depot-Gamma'],
+    graph_context_text: '### 🕸️ Knowledge Graph Overview:\n• **VoltBus V3** ➔ `OPERATES_ON` ➔ **Route 101 Transit Corridor**\n• **Route 101** ➔ `MANAGED_BY` ➔ **Depot-Alpha** & **Depot-Gamma**',
+    created_at: '2026-08-23T00:00:03Z',
+  },
+
+  // Exchange 1: Battery Architecture & Stop 7 Incident
   {
     id: 'msg_u_demo_1',
     conversation_id: 'conv_demo',
@@ -213,6 +252,8 @@ The VoltBus V3 thermal management system operates under four defined temperature
     graph_context_text: '### 🕸️ Knowledge Graph Traversal:\n• **VoltBus V3** ➔ `CONTAINS_COMPONENT` ➔ **LFP-2 Battery Pack (600 kWh)** [voltbus_v3_schematic.png]\n• **VoltBus V3** ➔ `GOVERNED_BY` ➔ **Thermal Safety Flowchart** [thermal_safety_flowchart.png]\n• **Stop 7 (Oak Street)** ➔ `EXPERIENCED_INCIDENT` ➔ **July 12 Heatwave Event** [route101_network_map.png]\n• **Depot-Gamma** ➔ `EXECUTES_DIAGNOSTIC` ➔ **Diagnostic Routine 88 (DR-88)** [voltbus_route101_debrief.mp3]',
     created_at: '2026-08-23T00:01:05Z',
   },
+
+  // Exchange 2: Depot-Gamma Maintenance SOP
   {
     id: 'msg_u_demo_2',
     conversation_id: 'conv_demo',
@@ -294,6 +335,308 @@ Per standard operating procedure, any transit vehicle that registers a Level 1 t
     graph_context_text: '### 🕸️ Knowledge Graph Traversal:\n• **Depot-Gamma** ➔ `LEAD_TECHNICIAN` ➔ **David Miller**\n• **David Miller** ➔ `EXECUTED` ➔ **Diagnostic Routine 88** on **VoltBus Unit #09**',
     created_at: '2026-08-23T00:02:05Z',
   },
+
+  // Exchange 3: Thermal Safety Escalation Protocol States 0–3
+  {
+    id: 'msg_u_demo_3',
+    conversation_id: 'conv_demo',
+    role: 'user',
+    content: 'What operational actions distinguish State 1 Warning from State 2 Critical and State 3 Emergency in the thermal safety flowchart?',
+    citations: [],
+    created_at: '2026-08-23T00:03:00Z',
+  },
+  {
+    id: 'msg_a_demo_3',
+    conversation_id: 'conv_demo',
+    role: 'assistant',
+    content: `According to the **Thermal Safety & Dynamic Throttle Flowchart** (\`thermal_safety_flowchart.png\`) and the **Master Operations Brief** [1, 2], the escalation protocols are strictly partitioned by temperature thresholds and automated control actions:
+
+### **State 1: Warning Alert (42°C – 48°C)**
+* **Threshold**: Pack temperature between **42.0°C and 48.0°C** [1].
+* **Automated Actions**:
+  * Dual coolant pumps instantly ramp to **100% capacity** (up from nominal 45% duty cycle) [1, 2].
+  * Overhead pantograph charging rate is actively throttled down from 450 kW to a maximum of **150 kW** [1].
+* **Operational Impact**: Vehicle remains in active transit service with passengers onboard [2].
+
+---
+
+### **State 2: Critical Fault Alert (>48°C)**
+* **Threshold**: Temperature exceeds **48.0°C** [1].
+* **Automated Actions**:
+  * **Immediate cessation** of pantograph fast-charging [1].
+  * Vehicle is held at the station or layover platform until temperatures drop below **44°C** [1, 2].
+* **Operational Impact**: Vehicle is taken out of passenger circulation and automatically rerouted directly to **Depot-Gamma** for Diagnostic Routine 88 (DR-88) inspection [1, 2].
+
+---
+
+### **State 3: Emergency Alarm (>55°C)**
+* **Threshold**: Temperature surpasses **55.0°C** or thermal runaway rate exceeds **1.5°C/sec** [1].
+* **Automated Actions**:
+  * **Pyrofuse trip & HV Contactor Open**: Instantly disconnects high-voltage 650V circuit to isolate the battery pack [1, 2].
+  * **Fire Suppression Pre-arming**: Aerosol thermal mitigation canisters are armed for automatic deployment [1].
+* **Operational Impact**: Immediate emergency stop, automated audible alarm broadcast, and mandatory **passenger evacuation protocol** [1, 2].`,
+    citations: [
+      {
+        status: 'VERIFIED',
+        file_id: 'demo_file_img_3',
+        filename: 'thermal_safety_flowchart.png',
+        claim_text: 'State 1 (42°C-48°C) ramps pumps to 100% and throttles charging to 150 kW; State 2 (>48°C) ceases charging and reroutes to Depot-Gamma; State 3 (>55°C) triggers pyrofuse isolation and passenger evacuation.',
+        is_grounded: true,
+        evidence_quote: 'State 1 (42°C - 48°C) Warning Alert: Ramp coolant pumps 100%, throttle fast-charge to 150 kW. State 2 (>48°C) Critical Fault: Immediate charge cessation; reroute to Depot-Gamma. State 3 (>55°C) Emergency: Pyrofuse trip, HV contactors open, evacuation.',
+        passage_number: 1,
+      },
+      {
+        status: 'VERIFIED',
+        file_id: 'demo_file_pdf_1',
+        filename: 'VoltBus_Master_Operations_Engineering_Brief_Clean.pdf',
+        page_number: 5,
+        claim_text: 'Thermal management protocol tiers enforce automatic cooling pump overdrive and station layover cooling limits.',
+        is_grounded: true,
+        evidence_quote: 'Under Section 4.2 Thermal Safety Rules: State 1 Warning triggers full pump overdrive. Vehicles in State 2 must be inspected under DR-88.',
+        passage_number: 2,
+      },
+    ],
+    critic_info: {
+      confidence: 'high',
+      reason: 'Cross-verified across the thermal escalation flowchart logic blocks and Section 4.2 of the Master Operations Engineering Brief.',
+    },
+    groundedness_score: 1.0,
+    retry_info: {
+      retried: false,
+    },
+    graph_hops: [
+      {
+        from_node: 'Thermal Safety Flowchart',
+        from_type: 'SPECIFICATION',
+        relation: 'DEFINES_THRESHOLD',
+        to_node: 'State 1 Warning (42°C-48°C)',
+        to_type: 'SAFETY_RULE',
+        filename: 'thermal_safety_flowchart.png',
+        evidence: 'State 1 (42°C - 48°C) Warning Alert',
+      },
+      {
+        from_node: 'Thermal Safety Flowchart',
+        from_type: 'SPECIFICATION',
+        relation: 'TRIGGERS_ACTION',
+        to_node: 'State 2 Critical Fault (>48°C)',
+        to_type: 'SAFETY_RULE',
+        filename: 'thermal_safety_flowchart.png',
+        evidence: 'Reroute to Depot-Gamma for DR-88',
+      },
+      {
+        from_node: 'Thermal Safety Flowchart',
+        from_type: 'SPECIFICATION',
+        relation: 'TRIGGERS_ACTION',
+        to_node: 'State 3 Emergency (>55°C)',
+        to_type: 'SAFETY_RULE',
+        filename: 'thermal_safety_flowchart.png',
+        evidence: 'Pyrofuse trip & Evacuation Protocol',
+      },
+    ],
+    graph_entities: ['Thermal Safety Flowchart', 'State 1 Warning', 'State 2 Critical Fault', 'State 3 Emergency', 'Depot-Gamma'],
+    graph_context_text: '### 🕸️ Knowledge Graph Traversal:\n• **Thermal Safety Flowchart** ➔ `DEFINES_THRESHOLD` ➔ **State 1 Warning (42°C-48°C)**\n• **Thermal Safety Flowchart** ➔ `TRIGGERS_ACTION` ➔ **State 2 Critical Fault (>48°C)** [Depot-Gamma DR-88]\n• **Thermal Safety Flowchart** ➔ `TRIGGERS_ACTION` ➔ **State 3 Emergency (>55°C)** [Pyrofuse Isolation]',
+    created_at: '2026-08-23T00:03:05Z',
+  },
+
+  // Exchange 4: Corridor Geography & Facility Responsibilities
+  {
+    id: 'msg_u_demo_4',
+    conversation_id: 'conv_demo',
+    role: 'user',
+    content: 'How are facility duties divided across the transit corridor between Depot-Alpha and Depot-Gamma?',
+    citations: [],
+    created_at: '2026-08-23T00:04:00Z',
+  },
+  {
+    id: 'msg_a_demo_4',
+    conversation_id: 'conv_demo',
+    role: 'assistant',
+    content: `Based on the **Route 101 Network Map** (\`route101_network_map.png\`), the **Master Operations Brief** [1, 2], and audio debrief records [3], facility responsibilities are divided geographically across the 14.2 km corridor:
+
+### **Transit Corridor Geography**
+* **Corridor Extent**: Route 101 spans **14.2 km** across 12 smart stations, connecting **Maple Ave** in the north to **Metro Terminal Hub** in the south [1, 2].
+* **Station Infrastructure**: Fast pantograph charging (450 kW) is strategically installed at high-density stops, including **Stop 7 (Oak Street)** and terminal stations [1, 2].
+
+---
+
+### **Division of Facility Responsibilities**
+1. **Depot-Alpha (North District Facility)**:
+   * **Primary Domain**: Mechanical infrastructure, structural chassis integrity, suspension, and HVAC maintenance [2].
+   * **Fleet Oversight**: Routine mechanical inspections, wheel alignments, and overnight exterior staging for North District routes [2].
+   * **Management**: Coordinated under Transit Operations Manager Marcus Vance [3].
+
+2. **Depot-Gamma (South District Facility)**:
+   * **Primary Domain**: High-voltage electrical powertrain, **600 kWh LFP-2 battery conditioning**, and cell resistance balancing [2, 3].
+   * **Specialized Capabilities**: Dedicated battery diagnostic bays for **Diagnostic Routine 88 (DR-88)**, sensor suite calibration (LiDAR/Radar), and Perception OS firmware staging [2, 3].
+   * **Lead Personnel**: Under the direct authority of Lead Electrical Technician David Miller and Chief Architect Elena Rostova [2, 3].`,
+    citations: [
+      {
+        status: 'VERIFIED',
+        file_id: 'demo_file_pdf_1',
+        filename: 'VoltBus_Master_Operations_Engineering_Brief_Clean.pdf',
+        page_number: 6,
+        claim_text: 'Depot-Alpha handles chassis and mechanical checks; Depot-Gamma handles high-voltage battery conditioning, cell resistance balancing, and sensor calibration.',
+        is_grounded: true,
+        evidence_quote: 'Depot-Alpha (North District): Mechanical infrastructure, chassis inspections, HVAC. Depot-Gamma (South District): Handles battery conditioning, sensor calibration, software updates.',
+        passage_number: 1,
+      },
+      {
+        status: 'VERIFIED',
+        file_id: 'demo_file_img_2',
+        filename: 'route101_network_map.png',
+        claim_text: 'The 14.2 km Route 101 corridor links 12 smart stations from Depot-Alpha in the north to Depot-Gamma in the south.',
+        is_grounded: true,
+        evidence_quote: 'Route 101 Transit Corridor: 14.2 km total length, 12 Smart Stations connecting Depot-Alpha (North) to Depot-Gamma (South).',
+        passage_number: 2,
+      },
+      {
+        status: 'VERIFIED',
+        file_id: 'demo_file_aud_1',
+        filename: 'voltbus_route101_debrief.mp3',
+        timestamp: '01:10 - 01:45',
+        claim_text: 'Marcus Vance coordinates North District fleet logistics while David Miller oversees Depot-Gamma battery diagnostics.',
+        is_grounded: true,
+        evidence_quote: 'Depot-Gamma is our primary hub for all high-voltage electronics and battery health diagnostics. We keep routine mechanical work at Depot-Alpha.',
+        passage_number: 3,
+      },
+    ],
+    critic_info: {
+      confidence: 'high',
+      reason: 'Triangulated across geographic corridor map, operations manual Section 5, and maintenance debrief recordings.',
+    },
+    groundedness_score: 1.0,
+    retry_info: {
+      retried: false,
+    },
+    graph_hops: [
+      {
+        from_node: 'Route 101',
+        from_type: 'CORRIDOR',
+        relation: 'TERMINATES_AT',
+        to_node: 'Depot-Alpha (North)',
+        to_type: 'FACILITY',
+        filename: 'route101_network_map.png',
+        evidence: 'North terminal anchor Depot-Alpha',
+      },
+      {
+        from_node: 'Route 101',
+        from_type: 'CORRIDOR',
+        relation: 'TERMINATES_AT',
+        to_node: 'Depot-Gamma (South)',
+        to_type: 'FACILITY',
+        filename: 'route101_network_map.png',
+        evidence: 'South terminal anchor Depot-Gamma',
+      },
+      {
+        from_node: 'Depot-Gamma',
+        from_type: 'FACILITY',
+        relation: 'SPECIALIZES_IN',
+        to_node: 'LFP-2 Battery Pack (600 kWh)',
+        to_type: 'TECH',
+        filename: 'VoltBus_Master_Operations_Engineering_Brief_Clean.pdf',
+        evidence: 'Sole authority for battery conditioning and DR-88',
+      },
+    ],
+    graph_entities: ['Route 101', 'Depot-Alpha', 'Depot-Gamma', 'Marcus Vance', 'David Miller', 'LFP-2 Battery Pack'],
+    graph_context_text: '### 🕸️ Knowledge Graph Traversal:\n• **Route 101** ➔ `NORTH_TERMINUS` ➔ **Depot-Alpha** [Mechanical & Chassis]\n• **Route 101** ➔ `SOUTH_TERMINUS` ➔ **Depot-Gamma** [HV Battery & Sensor Diagnostics]\n• **Depot-Gamma** ➔ `SPECIALIZES_IN` ➔ **LFP-2 Battery Conditioning (DR-88)**',
+    created_at: '2026-08-23T00:04:05Z',
+  },
+
+  // Exchange 5: Hardware Blueprint & Specifications
+  {
+    id: 'msg_u_demo_5',
+    conversation_id: 'conv_demo',
+    role: 'user',
+    content: 'What are the exact voltage, capacity, motor drivetrain, and sensor specifications shown on the VoltBus V3 schematic?',
+    citations: [],
+    created_at: '2026-08-23T00:05:00Z',
+  },
+  {
+    id: 'msg_a_demo_5',
+    conversation_id: 'conv_demo',
+    role: 'assistant',
+    content: `According to the **VoltBus V3 Hardware Schematic** (\`voltbus_v3_schematic.png\`) and the **Engineering Specifications Section** [1, 2], the vehicle specifications include:
+
+### **1. Powertrain & High-Voltage Battery Architecture**
+* **Nominal Voltage**: **650V DC** nominal bus voltage [1].
+* **Battery Capacity**: **923 Ah total capacity**, delivering **600 kWh storage** via dual under-floor liquid-cooled LFP-2 modules [1, 2].
+* **Charging Interface**: Top-mounted inverted pantograph mechanism capable of receiving up to **450 kW DC** fast charge [1].
+
+---
+
+### **2. Drivetrain & Motors**
+* **Motor Setup**: **4x 150 kW Permanent Magnet Synchronous Motors (PMSM)** configured for independent wheel-hub or dual-axle electronic all-wheel drive (AWD) [1, 2].
+* **Total Peak Power Output**: **600 kW** (approx. 805 hp) with integrated regenerative braking up to 250 kW [1].
+* **Chassis & Body**: 12-meter lightweight extruded aluminum monocoque with low-floor step-free passenger boarding [1].
+
+---
+
+### **3. Autonomous Sensor Suite & Edge Compute**
+* **LiDAR Array**: 4x 128-beam solid-state LiDAR domes providing 360° point cloud coverage [1].
+* **Vision & Radar**: 8 high-dynamic-range (HDR) automotive cameras and 2 long-range 77 GHz millimetric radar units [1].
+* **Onboard Intelligence**: Redundant Edge AI Compute Node executing **Perception OS 4.2** with a hardware-isolated **Safety Override Engine (SOE)** [1, 2].`,
+    citations: [
+      {
+        status: 'VERIFIED',
+        file_id: 'demo_file_img_1',
+        filename: 'voltbus_v3_schematic.png',
+        claim_text: 'The VoltBus V3 features 650V nominal voltage, 923 Ah / 600 kWh LFP-2 battery, 4x 150 kW PMSM motors, and 4x 128-beam LiDAR domes.',
+        is_grounded: true,
+        evidence_quote: '650V Nominal Voltage, 923 Ah, 600 kWh LFP-2 Battery; 4x 150 kW PMSM Electric Drive; 450 kW Inverted Pantograph; 4x 128-beam LiDAR; Perception OS 4.2 Node.',
+        passage_number: 1,
+      },
+      {
+        status: 'VERIFIED',
+        file_id: 'demo_file_pdf_1',
+        filename: 'VoltBus_Master_Operations_Engineering_Brief_Clean.pdf',
+        page_number: 4,
+        claim_text: 'Vehicle engineering section confirms 600 kW total drivetrain output and Safety Override Engine fail-safe integration.',
+        is_grounded: true,
+        evidence_quote: 'Section 3.1 Drivetrain Specs: 4x 150 kW PMSM drive units deliver 600 kW combined peak power, managed by Perception OS 4.2 with hardware SOE isolation.',
+        passage_number: 2,
+      },
+    ],
+    critic_info: {
+      confidence: 'high',
+      reason: 'Fully validated against the VoltBus V3 engineering blueprint schematic annotations and Section 3.1 technical specifications.',
+    },
+    groundedness_score: 1.0,
+    retry_info: {
+      retried: false,
+    },
+    graph_hops: [
+      {
+        from_node: 'VoltBus V3',
+        from_type: 'PROJECT',
+        relation: 'POWERED_BY',
+        to_node: 'LFP-2 Battery Pack (600 kWh / 650V)',
+        to_type: 'TECH',
+        filename: 'voltbus_v3_schematic.png',
+        evidence: '650V nominal, 923 Ah, 600 kWh battery pack',
+      },
+      {
+        from_node: 'VoltBus V3',
+        from_type: 'PROJECT',
+        relation: 'DRIVEN_BY',
+        to_node: 'PMSM Motors (4x 150 kW)',
+        to_type: 'TECH',
+        filename: 'voltbus_v3_schematic.png',
+        evidence: '4x 150 kW Permanent Magnet Synchronous Motors',
+      },
+      {
+        from_node: 'VoltBus V3',
+        from_type: 'PROJECT',
+        relation: 'CONTROLLED_BY',
+        to_node: 'Perception OS 4.2 & SOE Node',
+        to_type: 'SOFTWARE',
+        filename: 'voltbus_v3_schematic.png',
+        evidence: 'Perception OS 4.2 Compute Node with Safety Override Engine',
+      },
+    ],
+    graph_entities: ['VoltBus V3', 'LFP-2 Battery Pack', 'PMSM Motors', 'Perception OS 4.2', 'Safety Override Engine', 'LiDAR Suite'],
+    graph_context_text: '### 🕸️ Knowledge Graph Traversal:\n• **VoltBus V3** ➔ `POWERED_BY` ➔ **LFP-2 Battery (600 kWh / 650V / 923 Ah)** [voltbus_v3_schematic.png]\n• **VoltBus V3** ➔ `DRIVEN_BY` ➔ **PMSM Motors (4x 150 kW = 600 kW Peak)** [voltbus_v3_schematic.png]\n• **VoltBus V3** ➔ `CONTROLLED_BY` ➔ **Perception OS 4.2 Compute Node & SOE** [VoltBus_Master_Operations_Engineering_Brief_Clean.pdf]',
+    created_at: '2026-08-23T00:05:05Z',
+  },
 ]
 
 // Per-conversation message cache for instant chat history on tab switch
@@ -326,17 +669,9 @@ export function invalidateMessagesCache(conversationId: string) {
 
 export async function getConversationMessages(conversationId: string): Promise<PersistedMessage[]> {
   if (conversationId === 'conv_demo') {
-    try {
-      const res = await apiFetch(`${API_BASE}/conversations/${conversationId}/messages`)
-      if (res.ok) {
-        const data = await res.json()
-        if (data && data.length > 0 && !data.some((m: any) => m.content === 'hi')) {
-          setCachedMessages(conversationId, data)
-          return data
-        }
-      }
-    } catch (e) {
-      // Fallback
+    const cached = _msgsCache['conv_demo']
+    if (cached && cached.length >= CANONICAL_DEMO_MESSAGES.length) {
+      return cached
     }
     setCachedMessages('conv_demo', CANONICAL_DEMO_MESSAGES)
     return CANONICAL_DEMO_MESSAGES
