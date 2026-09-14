@@ -39,14 +39,17 @@ export function startGuestSession(): GuestSession {
     createdAt: Date.now(),
   }
   try {
-    localStorage.setItem(GUEST_SESSION_KEY, JSON.stringify(session))
+    sessionStorage.setItem(GUEST_SESSION_KEY, JSON.stringify(session))
+    localStorage.removeItem(GUEST_SESSION_KEY)
   } catch (e) {}
   return session
 }
 
 export function getGuestSession(): GuestSession | null {
   try {
-    const raw = localStorage.getItem(GUEST_SESSION_KEY)
+    // Clear any stale legacy localStorage guest sessions to ensure clean Live Demo on restart
+    localStorage.removeItem(GUEST_SESSION_KEY)
+    const raw = sessionStorage.getItem(GUEST_SESSION_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
       if (parsed?.user?.id && parsed?.conversationId) {
@@ -59,6 +62,7 @@ export function getGuestSession(): GuestSession | null {
 
 export function endGuestSession(): void {
   try {
+    sessionStorage.removeItem(GUEST_SESSION_KEY)
     localStorage.removeItem(GUEST_SESSION_KEY)
   } catch (e) {}
 }
