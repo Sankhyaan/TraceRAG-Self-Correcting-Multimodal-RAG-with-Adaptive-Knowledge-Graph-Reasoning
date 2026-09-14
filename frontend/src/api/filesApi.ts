@@ -197,8 +197,14 @@ export async function listFiles(
         setCachedFiles(conversationId, fileType || 'all', fallback)
         return fallback
       }
-      const errorData = await res.json().catch(() => ({}))
-      throw new Error(errorData.detail || `Failed to fetch files: ${res.status}`)
+      const cached = getCachedFiles(conversationId, fileType || 'all')
+      if (cached) return cached
+      return {
+        conversation_id: conversationId,
+        files: [],
+        total: 0,
+        by_type: { document: 0, image: 0, audio: 0, video: 0 },
+      }
     }
 
     const data: ListFilesResponse = await res.json()
@@ -216,7 +222,14 @@ export async function listFiles(
       setCachedFiles(conversationId, fileType || 'all', fallback)
       return fallback
     }
-    throw err
+    const cached = getCachedFiles(conversationId, fileType || 'all')
+    if (cached) return cached
+    return {
+      conversation_id: conversationId,
+      files: [],
+      total: 0,
+      by_type: { document: 0, image: 0, audio: 0, video: 0 },
+    }
   }
 }
 

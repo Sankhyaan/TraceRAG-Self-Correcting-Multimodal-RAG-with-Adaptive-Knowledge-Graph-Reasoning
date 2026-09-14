@@ -133,15 +133,15 @@ def list_files(
             return {"conversation_id": "", "files": [], "total": 0, "by_type": {"document": 0, "image": 0, "audio": 0, "video": 0}}
 
         all_files = []
-        try:
-            all_files = storage_service.list_files(conversation_id=conversation_id)
-        except Exception as db_err:
-            logger.warning(f"Notice querying files for conversation '{conversation_id}': {db_err}")
-            if conversation_id == "conv_demo":
-                from backend.demo_service import get_demo_files
-                all_files = get_demo_files()
-            else:
-                raise
+        if conversation_id == "conv_demo":
+            from backend.demo_service import get_demo_files
+            all_files = get_demo_files()
+        else:
+            try:
+                all_files = storage_service.list_files(conversation_id=conversation_id)
+            except Exception as db_err:
+                logger.warning(f"Database error querying files for conversation '{conversation_id}': {db_err}")
+                all_files = []
 
         if (not all_files) and conversation_id == "conv_demo":
             from backend.demo_service import get_demo_files
@@ -171,6 +171,7 @@ def list_files(
             "by_type": by_type,
         }
     except Exception as e:
+        logger.error(f"Unexpected error in list_files: {e}")
         if conversation_id == "conv_demo":
             from backend.demo_service import get_demo_files
             demo_f = get_demo_files()
@@ -187,7 +188,12 @@ def list_files(
                     "video": sum(1 for f in demo_f if f.get("file_type") == "video"),
                 },
             }
-        raise HTTPException(status_code=500, detail=str(e))
+        return {
+            "conversation_id": conversation_id or "",
+            "files": [],
+            "total": 0,
+            "by_type": {"document": 0, "image": 0, "audio": 0, "video": 0},
+        }
 
 
 
