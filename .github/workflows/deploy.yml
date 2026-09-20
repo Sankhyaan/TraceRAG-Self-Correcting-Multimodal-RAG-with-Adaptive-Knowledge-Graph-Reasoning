@@ -1,0 +1,30 @@
+name: Deploy TraceRAG to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Auto Deploy on Push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: SSH into EC2 and Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/TraceRAG
+            git pull origin main
+            source venv/bin/activate
+            pip install --prefer-binary -r backend/requirements.txt
+            cd frontend && npm install && npm run build && cd ..
+            pm2 restart tracerag-backend
+            pm2 restart tracerag-frontend
+            pm2 save
