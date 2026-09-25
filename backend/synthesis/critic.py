@@ -73,38 +73,30 @@ class RetrievalCritic:
                 passages_str = "\n\n".join(formatted_passages)
                 prompt = CRITIC_PROMPT.format(query=query, passages=passages_str)
 
-                candidate_models = [
-                    self.settings.gemini_model or "gemini-2.0-flash",
-                    "gemini-2.0-flash",
-                    "gemini-1.5-flash",
-                ]
-                raw = "{}"
-                for m_name in candidate_models:
-                    try:
-                        resp = client.models.generate_content(
-                            model=m_name,
-                            contents=prompt
-                        )
-                        if resp.text and resp.text.strip():
-                            raw = resp.text.strip()
-                            break
-                    except Exception:
-                        continue
-                if raw.startswith("```"):
-                    raw = re.sub(r"^```(?:json)?\s*", "", raw)
-                    raw = re.sub(r"\s*```$", "", raw)
-
-                data = json.loads(raw)
-                conf = data.get("confidence", "medium").lower()
-                if conf not in ("high", "medium", "low"):
-                    conf = "medium"
-
-                return CriticResult(
-                    confidence=conf,
-                    reason=data.get("reason", "Graded by LLM critic."),
-                    missing_aspects=data.get("missing_aspects", []),
-                    should_retry=data.get("should_retry", conf == "low"),
+                from backend.synthesis.llm_client import call_llm
+                raw = call_llm(
+                    prompt=prompt,
+                    temperature=0.0,
+                    max_tokens=600,
+                    json_mode=True,
                 )
+                if raw:
+                    raw_clean = raw.strip()
+                    if raw_clean.startswith("```"):
+                        raw_clean = re.sub(r"^```(?:json)?\s*", "", raw_clean)
+                        raw_clean = re.sub(r"\s*```$", "", raw_clean)
+
+                    data = json.loads(raw_clean)
+                    conf = data.get("confidence", "medium").lower()
+                    if conf not in ("high", "medium", "low"):
+                        conf = "medium"
+
+                    return CriticResult(
+                        confidence=conf,
+                        reason=data.get("reason", "Graded by LLM critic."),
+                        missing_aspects=data.get("missing_aspects", []),
+                        should_retry=data.get("should_retry", conf == "low"),
+                    )
             except Exception as e:
                 logger.warning(f"LLM Critic notice: {e}")
 

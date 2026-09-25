@@ -131,43 +131,29 @@ Return ONLY a JSON object matching this schema:
   "reasoning": "Short 1-sentence reason for classification."
 }}"""
 
-    candidate_models = [
-        settings.gemini_model or "gemini-2.0-flash",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash",
-    ]
+    from backend.synthesis.llm_client import call_llm
 
     try:
-        from google import genai
-        from google.genai import types
+        raw = call_llm(
+            prompt=prompt,
+            temperature=0.0,
+            max_tokens=1024,
+            json_mode=True,
+        )
+        if raw:
+            raw_clean = raw.strip()
+            if raw_clean.startswith("```"):
+                raw_clean = re.sub(r"^```(?:json)?\s*", "", raw_clean)
+                raw_clean = re.sub(r"\s*```$", "", raw_clean)
+            data = json.loads(raw_clean)
 
-        client = genai.Client(api_key=settings.gemini_api_key)
-        for m_name in candidate_models:
-            try:
-                resp = client.models.generate_content(
-                    model=m_name,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                        temperature=0.0,
-                    ),
-                )
-                raw = resp.text.strip() if resp.text else "{}"
-                if raw.startswith("```"):
-                    raw = re.sub(r"^```(?:json)?\s*", "", raw)
-                    raw = re.sub(r"\s*```$", "", raw)
-                data = json.loads(raw)
+            intent_type = data.get("intent_type", "GENERAL_KNOWLEDGE")
+            if intent_type in ("GENERAL_KNOWLEDGE", "CASUAL_CONVERSATION"):
+                data["is_conversational"] = True
+            elif intent_type == "CORPUS_QUERY":
+                data["is_conversational"] = False
 
-                intent_type = data.get("intent_type", "GENERAL_KNOWLEDGE")
-                if intent_type in ("GENERAL_KNOWLEDGE", "CASUAL_CONVERSATION"):
-                    data["is_conversational"] = True
-                elif intent_type == "CORPUS_QUERY":
-                    data["is_conversational"] = False
-
-                return data
-            except Exception as loop_e:
-                logger.debug(f"Classifier model {m_name} notice: {loop_e}")
-                continue
+            return data
     except Exception as e:
         logger.warning(f"Pure LLM semantic intent classification failed: {e}")
 
@@ -234,7 +220,6 @@ def generate_conversational_response(
     Generates rich, comprehensive expert answers for general world knowledge, coding,
     science, math, and friendly chit-chat.
     """
-    settings = get_settings()
     clean_q = query.strip()
     q_low = clean_q.lower()
 
@@ -254,70 +239,14 @@ def generate_conversational_response(
 
     context_msg = f"{history_str}User message: \"{query}\"\n\nPlease provide your helpful, accurate, and structured answer:"
 
-    candidate_models = [
-        settings.gemini_model or "gemini-2.0-flash",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash",
-        "gemini-1.5-pro",
-    ]
-
-    if settings.gemini_api_key:
-        # 1. Try modern google.genai Client with candidate models
-        try:
-            from google import genai
-            from google.genai import types
-
-            client = genai.Client(api_key=settings.gemini_api_key)
-            for m_name in candidate_models:
-                try:
-                    resp = client.models.generate_content(
-                        model=m_name,
-                        contents=context_msg,
-                        config=types.GenerateContentConfig(
-                            system_instruction=GENERAL_ASSISTANT_SYSTEM_PROMPT,
-                            temperature=0.3,
-                            max_output_tokens=2500,
-                        ),
-                    )
-                    if resp.text and resp.text.strip():
-                        return resp.text.strip()
-                except Exception as loop_e:
-                    logger.debug(f"google.genai model {m_name} failed: {loop_e}")
-                    continue
-        except Exception as e:
-            logger.warning(f"google.genai general knowledge generation notice: {e}")
-
-        # 2. Fallback candidate loop with legacy google.generativeai
-        for m_name in candidate_models:
-            try:
-                import google.generativeai as legacy_genai
-                legacy_genai.configure(api_key=settings.gemini_api_key)
-                model = legacy_genai.GenerativeModel(
-                    model_name=m_name,
-                    system_instruction=GENERAL_ASSISTANT_SYSTEM_PROMPT,
-                )
-                response = model.generate_content(
-                    context_msg,
-                    generation_config={"temperature": 0.3, "max_output_tokens": 2500}
-                )
-                if response.text and response.text.strip():
-                    return response.text.strip()
-            except Exception as e:
-                logger.debug(f"Gemini generation fallback failed for model {m_name}: {str(e)}")
-                continue
-
-    if settings.anthropic_api_key:
-        try:
-            import anthropic
-            client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
-            resp = client.messages.create(
-                model=settings.anthropic_model,
-                max_tokens=2500,
-                system=GENERAL_ASSISTANT_SYSTEM_PROMPT,
-                messages=[{"role": "user", "content": context_msg}],
-            )
-            return resp.content[0].text.strip()
-        except Exception as e:
-            logger.error(f"Claude general answer generation error: {e}")
+    from backend.synthesis.llm_client import call_llm
+    ans = call_llm(
+        prompt=context_msg,
+        system_prompt=GENERAL_ASSISTANT_SYSTEM_PROMPT,
+        temperature=0.3,
+        max_tokens=2500,
+    )
+    if ans and ans.strip():
+        return ans.strip()
 
     return "Hello! I am Trace, your multimodal AI assistant. How can I help you explore your documents, write code, or solve problems today?"

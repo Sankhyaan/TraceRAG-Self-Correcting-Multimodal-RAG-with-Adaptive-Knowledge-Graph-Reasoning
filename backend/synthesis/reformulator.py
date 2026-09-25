@@ -70,41 +70,30 @@ class QueryReformulator:
 
     def _generate_reformulation(self, query: str, critic_result: CriticResult) -> str:
         """Calls LLM or heuristic builder to produce a refined search string."""
-        if self.settings.gemini_api_key:
+        if self.settings.gemini_api_key or self.settings.anthropic_api_key:
             try:
-                from google import genai
-                client = genai.Client(api_key=self.settings.gemini_api_key)
-
                 prompt = REFORMULATE_PROMPT.format(
                     query=query,
                     reason=critic_result.reason,
                     missing_aspects=", ".join(critic_result.missing_aspects) or "Core technical details",
                 )
-                candidate_models = [
-                    self.settings.gemini_model or "gemini-2.0-flash",
-                    "gemini-2.0-flash",
-                    "gemini-1.5-flash",
-                ]
-                raw = "{}"
-                for m_name in candidate_models:
-                    try:
-                        resp = client.models.generate_content(
-                            model=m_name,
-                            contents=prompt
-                        )
-                        if resp.text and resp.text.strip():
-                            raw = resp.text.strip()
-                            break
-                    except Exception:
-                        continue
-                if raw.startswith("```"):
-                    raw = re.sub(r"^```(?:json)?\s*", "", raw)
-                    raw = re.sub(r"\s*```$", "", raw)
+                from backend.synthesis.llm_client import call_llm
+                raw = call_llm(
+                    prompt=prompt,
+                    temperature=0.0,
+                    max_tokens=300,
+                    json_mode=True,
+                )
+                if raw:
+                    raw_clean = raw.strip()
+                    if raw_clean.startswith("```"):
+                        raw_clean = re.sub(r"^```(?:json)?\s*", "", raw_clean)
+                        raw_clean = re.sub(r"\s*```$", "", raw_clean)
 
-                data = json.loads(raw)
-                ref_q = data.get("reformulated_query")
-                if ref_q and len(ref_q.strip()) > 3:
-                    return ref_q.strip()
+                    data = json.loads(raw_clean)
+                    ref_q = data.get("reformulated_query")
+                    if ref_q and len(ref_q.strip()) > 3:
+                        return ref_q.strip()
             except Exception as e:
                 logger.warning(f"LLM Reformulation notice: {str(e)}; using heuristic reformulation.")
 

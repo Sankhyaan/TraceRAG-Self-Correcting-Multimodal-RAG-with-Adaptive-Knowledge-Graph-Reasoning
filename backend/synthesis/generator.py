@@ -79,85 +79,25 @@ class AnswerGenerator:
                 hop_lines.append(f"- {h.get('from_node')} --[{h.get('relation')}]--> {h.get('to_node')} (Source: {h.get('filename', '')} {h.get('timestamp') or ''})")
             graph_str = "\nKnowledge Graph Connections:\n" + "\n".join(hop_lines) + "\n"
 
-        # Generate via modern high-throughput google.genai Client
-        if self.settings.gemini_api_key:
-            prompt = SYNTHESIS_USER_PROMPT.format(
-                history_section=history_section,
-                query=query,
-                passages=passages_str,
-                graph_context=graph_str,
-            )
+        prompt = SYNTHESIS_USER_PROMPT.format(
+            history_section=history_section,
+            query=query,
+            passages=passages_str,
+            graph_context=graph_str,
+        )
 
-            candidate_models = [
-                self.settings.gemini_model or "gemini-2.0-flash",
-                "gemini-2.0-flash",
-                "gemini-1.5-flash",
-                "gemini-1.5-pro",
-            ]
+        from backend.synthesis.llm_client import call_llm
+        llm_response = call_llm(
+            prompt=prompt,
+            system_prompt=SYNTHESIS_SYSTEM_PROMPT,
+            temperature=0.3,
+            max_tokens=2000,
+        )
+        if llm_response and llm_response.strip():
+            return llm_response.strip()
 
-            # 1. Try modern google.genai Client (super fast HTTP/2)
-            try:
-                from google import genai
-                from google.genai import types
-                client = genai.Client(api_key=self.settings.gemini_api_key)
-                for m_name in candidate_models:
-                    try:
-                        resp = client.models.generate_content(
-                            model=m_name,
-                            contents=prompt,
-                            config=types.GenerateContentConfig(
-                                system_instruction=SYNTHESIS_SYSTEM_PROMPT,
-                                temperature=0.3,
-                                max_output_tokens=1500,
-                            )
-                        )
-                        if resp.text and resp.text.strip():
-                            return resp.text.strip()
-                    except Exception as loop_e:
-                        logger.debug(f"google.genai generator model {m_name} notice: {loop_e}")
-                        continue
-            except Exception as e:
-                logger.warning(f"google.genai Client notice: {e}; falling back to candidate models.")
-
-            # 2. Fallback candidate loop with legacy google.generativeai
-            for m_name in candidate_models:
-                try:
-                    import google.generativeai as legacy_genai
-                    legacy_genai.configure(api_key=self.settings.gemini_api_key)
-                    model = legacy_genai.GenerativeModel(
-                        model_name=m_name,
-                        system_instruction=SYNTHESIS_SYSTEM_PROMPT,
-                    )
-                    response = model.generate_content(
-                        prompt,
-                        generation_config={"temperature": 0.3, "max_output_tokens": 1500}
-                    )
-                    if response.text and response.text.strip():
-                        return response.text.strip()
-                except Exception as e:
-                    logger.debug(f"Gemini generation failed for model {m_name}: {str(e)}")
-                    continue
-
-        if self.settings.anthropic_api_key:
-            try:
-                import anthropic
-
-                client = anthropic.Anthropic(api_key=self.settings.anthropic_api_key)
-                prompt = SYNTHESIS_USER_PROMPT.format(
-                    history_section=history_section,
-                    query=query,
-                    passages=passages_str,
-                    graph_context=graph_str,
-                )
-                resp = client.messages.create(
-                    model=self.settings.anthropic_model,
-                    max_tokens=1500,
-                    system=SYNTHESIS_SYSTEM_PROMPT,
-                    messages=[{"role": "user", "content": prompt}],
-                )
-                return resp.content[0].text.strip()
-            except Exception as e:
-                logger.error(f"Claude answer generation error: {str(e)}")
+        # Fallback if LLM unavailable/rate-limited: produce keyword-focused extractive summary
+        return self._extractive_fallback(query, chunks)
 
         # Fallback if LLM unavailable/rate-limited: produce keyword-focused extractive summary
         return self._extractive_fallback(query, chunks)

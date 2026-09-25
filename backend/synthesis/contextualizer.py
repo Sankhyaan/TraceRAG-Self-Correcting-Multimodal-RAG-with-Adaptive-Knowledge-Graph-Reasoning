@@ -54,11 +54,8 @@ class QueryContextualizer:
             return clean_query
 
         # Use modern LLM contextualizer to naturally understand human language & conversation thread
-        if self.settings.gemini_api_key:
+        if self.settings.gemini_api_key or self.settings.anthropic_api_key:
             try:
-                from google import genai
-                client = genai.Client(api_key=self.settings.gemini_api_key)
-
                 history_lines = []
                 for m in conversation_history[-4:]:
                     role = "User" if m.get("role") == "user" else "Assistant"
@@ -71,24 +68,17 @@ class QueryContextualizer:
                 history_str = "\n".join(history_lines)
                 user_prompt = f"Conversation History:\n{history_str}\n\nLatest User Follow-up:\n\"{clean_query}\"\n\nStandalone Search Query:"
 
-                candidate_models = [
-                    self.settings.gemini_model or "gemini-2.0-flash",
-                    "gemini-2.0-flash",
-                    "gemini-1.5-flash",
-                ]
-                for m_name in candidate_models:
-                    try:
-                        resp = client.models.generate_content(
-                            model=m_name,
-                            contents=user_prompt,
-                            config={"system_instruction": CONTEXTUALIZE_SYSTEM_PROMPT, "temperature": 0.0, "max_output_tokens": 100}
-                        )
-                        if resp.text and resp.text.strip():
-                            rewritten = resp.text.strip().strip('"\'')
-                            logger.info(f"LLM Contextualized: '{clean_query}' -> '{rewritten}'")
-                            return rewritten
-                    except Exception:
-                        continue
+                from backend.synthesis.llm_client import call_llm
+                rewritten = call_llm(
+                    prompt=user_prompt,
+                    system_prompt=CONTEXTUALIZE_SYSTEM_PROMPT,
+                    temperature=0.0,
+                    max_tokens=100,
+                )
+                if rewritten and rewritten.strip():
+                    rewritten_clean = rewritten.strip().strip('"\'')
+                    logger.info(f"LLM Contextualized: '{clean_query}' -> '{rewritten_clean}'")
+                    return rewritten_clean
             except Exception as e:
                 logger.warning(f"Notice during LLM contextualization: {e}")
 
