@@ -44,38 +44,37 @@ def call_llm(
 
         # 1A. Direct High-Throughput REST API (Bulletproof, zero SDK version mismatches)
         for model_name in candidate_models:
-            for api_version in ["v1beta", "v1"]:
-                try:
-                    import httpx
-                    url = f"https://generativelanguage.googleapis.com/{api_version}/models/{model_name}:generateContent?key={api_key}"
-                    body: Dict[str, Any] = {
-                        "contents": [{
-                            "parts": [{"text": full_prompt}]
-                        }],
-                        "generationConfig": {
-                            "temperature": temperature,
-                            "maxOutputTokens": max_tokens,
-                        }
+            try:
+                import httpx
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+                body: Dict[str, Any] = {
+                    "contents": [{
+                        "parts": [{"text": full_prompt}]
+                    }],
+                    "generationConfig": {
+                        "temperature": temperature,
+                        "maxOutputTokens": max_tokens,
                     }
-                    if json_mode:
-                        body["generationConfig"]["responseMimeType"] = "application/json"
+                }
+                if json_mode:
+                    body["generationConfig"]["responseMimeType"] = "application/json"
 
-                    with httpx.Client(timeout=25.0) as client:
-                        resp = client.post(url, json=body)
-                        if resp.status_code == 200:
-                            data = resp.json()
-                            candidates = data.get("candidates", [])
-                            if candidates:
-                                parts = candidates[0].get("content", {}).get("parts", [])
-                                if parts and parts[0].get("text"):
-                                    text_out = parts[0]["text"].strip()
-                                    if text_out:
-                                        return text_out
-                        else:
-                            logger.info(f"Gemini REST notice ({model_name} {api_version}): HTTP {resp.status_code} - {resp.text[:140]}")
-                except Exception as e:
-                    logger.info(f"Gemini REST exception ({model_name} {api_version}): {e}")
-                    continue
+                with httpx.Client(timeout=8.0) as client:
+                    resp = client.post(url, json=body)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        candidates = data.get("candidates", [])
+                        if candidates:
+                            parts = candidates[0].get("content", {}).get("parts", [])
+                            if parts and parts[0].get("text"):
+                                text_out = parts[0]["text"].strip()
+                                if text_out:
+                                    return text_out
+                    else:
+                        logger.info(f"Gemini REST notice ({model_name}): HTTP {resp.status_code} - {resp.text[:140]}")
+            except Exception as e:
+                logger.info(f"Gemini REST exception ({model_name}): {e}")
+                continue
 
         # 1B. Fallback to google.genai Client
         try:
