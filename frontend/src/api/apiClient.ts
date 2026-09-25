@@ -1,6 +1,19 @@
 import { getAccessToken } from './authApi'
 
-const _RAW_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '')
+function resolveApiBase(): string {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL.replace(/\/+$/, '')
+  }
+  if (typeof window !== 'undefined' && window.location.hostname) {
+    const protocol = window.location.protocol || 'http:'
+    const hostname = window.location.hostname
+    // If accessing via cloud IP or host, automatically connect to port 8001 on the same host
+    return `${protocol}//${hostname}:8001`
+  }
+  return 'http://localhost:8001'
+}
+
+const _RAW_BASE = resolveApiBase()
 export const API_BASE = `${_RAW_BASE}/api`
 
 /**

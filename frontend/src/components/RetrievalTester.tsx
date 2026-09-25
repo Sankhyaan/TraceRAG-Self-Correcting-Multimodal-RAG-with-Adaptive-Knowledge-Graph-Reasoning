@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { queryRetrieval, RetrievalResponse, DEFAULT_DEMO_RETRIEVAL } from '../api/retrievalApi'
+import { API_BASE } from '../api/apiClient'
 
 
 interface RetrievalTesterProps {
@@ -785,7 +786,7 @@ export const RetrievalTester: React.FC<RetrievalTesterProps> = ({ conversationId
                         {/* Thumbnail for image/video */}
                         {(chunk.file_type === 'image' || chunk.file_type === 'video') && (
                           <img
-                            src={`http://localhost:8000/api/files/${chunk.file_id}/thumbnail`}
+                            src={`${API_BASE}/files/${chunk.file_id}/thumbnail`}
                             alt="thumbnail"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                             style={{
