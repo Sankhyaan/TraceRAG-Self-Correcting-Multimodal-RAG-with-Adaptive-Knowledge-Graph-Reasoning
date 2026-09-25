@@ -80,11 +80,23 @@ class QueryReformulator:
                     reason=critic_result.reason,
                     missing_aspects=", ".join(critic_result.missing_aspects) or "Core technical details",
                 )
-                resp = client.models.generate_content(
-                    model=self.settings.gemini_model or "gemini-2.5-flash",
-                    contents=prompt
-                )
-                raw = resp.text.strip()
+                candidate_models = [
+                    self.settings.gemini_model or "gemini-2.0-flash",
+                    "gemini-2.0-flash",
+                    "gemini-1.5-flash",
+                ]
+                raw = "{}"
+                for m_name in candidate_models:
+                    try:
+                        resp = client.models.generate_content(
+                            model=m_name,
+                            contents=prompt
+                        )
+                        if resp.text and resp.text.strip():
+                            raw = resp.text.strip()
+                            break
+                    except Exception:
+                        continue
                 if raw.startswith("```"):
                     raw = re.sub(r"^```(?:json)?\s*", "", raw)
                     raw = re.sub(r"\s*```$", "", raw)

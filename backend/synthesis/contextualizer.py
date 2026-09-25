@@ -71,15 +71,24 @@ class QueryContextualizer:
                 history_str = "\n".join(history_lines)
                 user_prompt = f"Conversation History:\n{history_str}\n\nLatest User Follow-up:\n\"{clean_query}\"\n\nStandalone Search Query:"
 
-                resp = client.models.generate_content(
-                    model=self.settings.gemini_model or "gemini-2.5-flash",
-                    contents=user_prompt,
-                    config={"system_instruction": CONTEXTUALIZE_SYSTEM_PROMPT, "temperature": 0.0, "max_output_tokens": 100}
-                )
-                if resp.text and resp.text.strip():
-                    rewritten = resp.text.strip().strip('"\'')
-                    logger.info(f"LLM Contextualized: '{clean_query}' -> '{rewritten}'")
-                    return rewritten
+                candidate_models = [
+                    self.settings.gemini_model or "gemini-2.0-flash",
+                    "gemini-2.0-flash",
+                    "gemini-1.5-flash",
+                ]
+                for m_name in candidate_models:
+                    try:
+                        resp = client.models.generate_content(
+                            model=m_name,
+                            contents=user_prompt,
+                            config={"system_instruction": CONTEXTUALIZE_SYSTEM_PROMPT, "temperature": 0.0, "max_output_tokens": 100}
+                        )
+                        if resp.text and resp.text.strip():
+                            rewritten = resp.text.strip().strip('"\'')
+                            logger.info(f"LLM Contextualized: '{clean_query}' -> '{rewritten}'")
+                            return rewritten
+                    except Exception:
+                        continue
             except Exception as e:
                 logger.warning(f"Notice during LLM contextualization: {e}")
 

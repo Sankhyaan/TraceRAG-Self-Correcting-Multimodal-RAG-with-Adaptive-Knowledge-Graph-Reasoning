@@ -22,8 +22,8 @@ jobs:
           script: |
             cd ~/TraceRAG
             git pull origin main
-            source venv/bin/activate
-            pip install --prefer-binary -r backend/requirements.txt
+            source venv/bin/activate 2>/dev/null || source ~/.venv/bin/activate 2>/dev/null || true
+            pip install --prefer-binary -r requirements.txt || pip3 install --prefer-binary -r requirements.txt || true
             rm -f frontend/.env frontend/.env.local frontend/.env.production
             echo "VITE_API_URL=http://13.203.136.117:8001" > frontend/.env
             cd frontend && npm install && npm run build && cd ..

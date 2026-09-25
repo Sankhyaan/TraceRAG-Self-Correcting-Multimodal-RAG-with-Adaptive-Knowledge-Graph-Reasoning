@@ -1,0 +1,3 @@
+{
+  "commands": ["pm2 logs tracerag-backend --lines 60 --nostream"]
+}

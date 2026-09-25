@@ -273,16 +273,28 @@ Return ONLY a JSON mapping from each original mention to its canonical standardi
 }}"""
 
             client = genai.Client(api_key=self.settings.gemini_api_key)
-            resp = client.models.generate_content(
-                model=self.settings.gemini_model or "gemini-2.5-flash",
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    temperature=0.0,
-                    max_output_tokens=1024,
-                ),
-            )
-            raw = resp.text.strip() if resp.text else "{}"
+            models_to_try = [
+                self.settings.gemini_model or "gemini-2.0-flash",
+                "gemini-2.0-flash",
+                "gemini-1.5-flash",
+            ]
+            raw = "{}"
+            for m in models_to_try:
+                try:
+                    resp = client.models.generate_content(
+                        model=m,
+                        contents=prompt,
+                        config=types.GenerateContentConfig(
+                            response_mime_type="application/json",
+                            temperature=0.0,
+                            max_output_tokens=1024,
+                        ),
+                    )
+                    if resp.text and resp.text.strip():
+                        raw = resp.text.strip()
+                        break
+                except Exception:
+                    continue
             if raw.startswith("```"):
                 raw = re.sub(r"^```(?:json)?\s*", "", raw)
                 raw = re.sub(r"\s*```$", "", raw)

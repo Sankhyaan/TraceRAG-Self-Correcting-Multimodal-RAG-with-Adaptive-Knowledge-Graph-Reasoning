@@ -88,32 +88,38 @@ class AnswerGenerator:
                 graph_context=graph_str,
             )
 
+            candidate_models = [
+                self.settings.gemini_model or "gemini-2.0-flash",
+                "gemini-2.0-flash",
+                "gemini-1.5-flash",
+                "gemini-1.5-pro",
+            ]
+
             # 1. Try modern google.genai Client (super fast HTTP/2)
             try:
                 from google import genai
                 from google.genai import types
                 client = genai.Client(api_key=self.settings.gemini_api_key)
-                resp = client.models.generate_content(
-                    model=self.settings.gemini_model or "gemini-2.5-flash",
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        system_instruction=SYNTHESIS_SYSTEM_PROMPT,
-                        temperature=0.3,
-                        max_output_tokens=1500,
-                    )
-                )
-                if resp.text and resp.text.strip():
-                    return resp.text.strip()
+                for m_name in candidate_models:
+                    try:
+                        resp = client.models.generate_content(
+                            model=m_name,
+                            contents=prompt,
+                            config=types.GenerateContentConfig(
+                                system_instruction=SYNTHESIS_SYSTEM_PROMPT,
+                                temperature=0.3,
+                                max_output_tokens=1500,
+                            )
+                        )
+                        if resp.text and resp.text.strip():
+                            return resp.text.strip()
+                    except Exception as loop_e:
+                        logger.debug(f"google.genai generator model {m_name} notice: {loop_e}")
+                        continue
             except Exception as e:
                 logger.warning(f"google.genai Client notice: {e}; falling back to candidate models.")
 
-            # 2. Fallback candidate loop
-            candidate_models = [
-                self.settings.gemini_model or "gemini-2.5-flash",
-                "gemini-2.5-flash",
-                "gemini-2.0-flash",
-                "gemini-1.5-flash",
-            ]
+            # 2. Fallback candidate loop with legacy google.generativeai
             for m_name in candidate_models:
                 try:
                     import google.generativeai as legacy_genai
@@ -129,7 +135,7 @@ class AnswerGenerator:
                     if response.text and response.text.strip():
                         return response.text.strip()
                 except Exception as e:
-                    logger.warning(f"Gemini generation failed for model {m_name}: {str(e)}")
+                    logger.debug(f"Gemini generation failed for model {m_name}: {str(e)}")
                     continue
 
         if self.settings.anthropic_api_key:
