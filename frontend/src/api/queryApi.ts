@@ -119,55 +119,58 @@ export async function queryAndSynthesizeStream(
   alpha: number = 0.5,
   useRouter: boolean = true
 ): Promise<SynthesisResult> {
-  const res = await apiFetch(`${API_BASE}/query/stream`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      conversation_id: conversationId,
-      query,
-      top_k: topK,
-      alpha,
-      use_router: useRouter,
-    }),
-  })
+  try {
+    const res = await apiFetch(`${API_BASE}/query/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        conversation_id: conversationId,
+        query,
+        top_k: topK,
+        alpha,
+        use_router: useRouter,
+      }),
+    })
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.detail || `Stream request failed: ${res.status}`)
-  }
+    if (res.ok) {
+      const reader = res.body?.getReader()
+      if (reader) {
+        const decoder = new TextDecoder('utf-8')
+        let buffer = ''
+        let finalResult: SynthesisResult | null = null
 
-  const reader = res.body?.getReader()
-  if (!reader) throw new Error('ReadableStream not supported.')
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
 
-  const decoder = new TextDecoder('utf-8')
-  let buffer = ''
-  let finalResult: SynthesisResult | null = null
+          buffer += decoder.decode(value, { stream: true })
+          const parts = buffer.split('\n\n')
+          buffer = parts.pop() || ''
 
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-
-    buffer += decoder.decode(value, { stream: true })
-    const parts = buffer.split('\n\n')
-    buffer = parts.pop() || ''
-
-    for (const block of parts) {
-      if (!block.trim()) continue
-      const dataMatch = block.match(/data:\s*([\s\S]+)$/)
-      if (dataMatch) {
-        try {
-          const payload = JSON.parse(dataMatch[1].trim()) as PipelineProgressEvent
-          onEvent(payload)
-          if (payload.stage === 'done' && payload.result) {
-            finalResult = payload.result
+          for (const block of parts) {
+            if (!block.trim()) continue
+            const dataMatch = block.match(/data:\s*([\s\S]+)$/)
+            if (dataMatch) {
+              try {
+                const payload = JSON.parse(dataMatch[1].trim()) as PipelineProgressEvent
+                onEvent(payload)
+                if (payload.stage === 'done' && payload.result) {
+                  finalResult = payload.result
+                }
+              } catch (e) {
+                console.warn('Failed to parse SSE payload:', e)
+              }
+            }
           }
-        } catch (e) {
-          console.warn('Failed to parse SSE payload:', e)
         }
+
+        if (finalResult) return finalResult
       }
     }
+  } catch (err) {
+    console.warn('[queryAndSynthesizeStream] Streaming notice, falling back to direct synthesis:', err)
   }
 
-  if (finalResult) return finalResult
-  throw new Error('Stream finished without final result.')
+  // Guaranteed fallback to direct query synthesis
+  return await queryAndSynthesize(conversationId, query, topK, alpha, useRouter)
 }
