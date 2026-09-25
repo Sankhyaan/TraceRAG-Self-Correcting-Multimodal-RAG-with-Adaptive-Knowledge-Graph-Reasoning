@@ -177,50 +177,16 @@ async def query_and_synthesize_stream(req: QueryRequest):
 @router.post("/debug/llm")
 async def debug_llm_endpoint(req: QueryRequest):
     """Direct testing endpoint to diagnose raw LLM output and API response."""
-    import os
-    import httpx
-    from backend.config import get_settings
-    settings = get_settings()
-
-    raw_key = settings.gemini_api_key or os.getenv("GEMINI_API_KEY", "")
-    api_key = raw_key.strip().strip('"\'')
-
-    masked_key = f"{api_key[:6]}...{api_key[-4:]}" if len(api_key) > 10 else f"len={len(api_key)}"
-
-    rest_results = {}
-    # 1. Query ListModels to find exactly what models exist for this key
-    try:
-        list_url = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
-        resp_list = httpx.get(list_url, timeout=10.0)
-        rest_results["ListModels_v1beta"] = {
-            "status": resp_list.status_code,
-            "models": [m.get("name") for m in resp_list.json().get("models", [])] if resp_list.status_code == 200 else resp_list.text[:300]
-        }
-    except Exception as e:
-        rest_results["ListModels_v1beta"] = {"error": str(e)}
-
-    # 2. Test generation on 3.x models
-    test_models = [
-        "gemini-3.5-flash",
-        "gemini-3.7-flash",
-        "gemini-3.6-flash",
-        "gemini-3-flash-preview",
-        "gemini-3.1-flash-lite",
-        "gemini-3.8-flash",
-    ]
-    for model in test_models:
-        for ver in ["v1beta"]:
-            url = f"https://generativelanguage.googleapis.com/{ver}/models/{model}:generateContent?key={api_key}"
-            try:
-                resp = httpx.post(url, json={"contents": [{"parts": [{"text": "Say: Trace RAG online."}]}]}, timeout=10.0)
-                rest_results[f"{model}_{ver}"] = {"status": resp.status_code, "body": resp.text[:300]}
-            except Exception as e:
-                rest_results[f"{model}_{ver}"] = {"error": str(e)}
-
+    from backend.synthesis.llm_client import call_llm
+    ans = call_llm(
+        prompt=req.query,
+        system_prompt="You are Trace, a helpful AI expert. Provide an articulate answer.",
+        temperature=0.3,
+        max_tokens=1000,
+    )
     return {
-        "key_present": bool(api_key),
-        "masked_key": masked_key,
-        "settings_model": settings.gemini_model,
-        "rest_results": rest_results,
+        "query": req.query,
+        "success": bool(ans),
+        "llm_response": ans,
     }
 

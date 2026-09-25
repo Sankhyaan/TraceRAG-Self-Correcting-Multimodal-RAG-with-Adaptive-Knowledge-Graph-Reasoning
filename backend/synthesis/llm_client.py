@@ -30,16 +30,17 @@ def call_llm(
     if api_key:
         full_prompt = f"{system_prompt.strip()}\n\n{prompt.strip()}" if system_prompt else prompt.strip()
         candidate_models = [
-            "gemini-3.5-flash",
-            "gemini-3.7-flash",
             "gemini-3.6-flash",
             "gemini-3-flash-preview",
             "gemini-3.1-flash-lite",
+            "gemini-3.5-flash-lite",
+            "gemini-3.5-flash",
+            "gemini-3.7-flash",
             "gemini-3.8-flash",
-            "gemini-flash-latest",
         ]
-        if settings.gemini_model and settings.gemini_model not in candidate_models and "2.5" not in settings.gemini_model and "2.0" not in settings.gemini_model:
+        if settings.gemini_model and settings.gemini_model in ("gemini-3.6-flash", "gemini-3-flash-preview", "gemini-3.1-flash-lite"):
             candidate_models.insert(0, settings.gemini_model.strip().strip('"\''))
+        candidate_models = list(dict.fromkeys(candidate_models))
 
         # 1A. Direct High-Throughput REST API (Bulletproof, zero SDK version mismatches)
         for model_name in candidate_models:
