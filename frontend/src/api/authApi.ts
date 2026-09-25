@@ -1,13 +1,7 @@
 import { createClient, Session, AuthError } from '@supabase/supabase-js'
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string
-
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.error(
-    '[TraceRAG] VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be set in your .env file'
-  )
-}
+const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string) || 'https://trace-rag.supabase.co'
+const SUPABASE_ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as string) || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRyYWNlcmFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MjAwMDAwMDAwMH0.signature'
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
