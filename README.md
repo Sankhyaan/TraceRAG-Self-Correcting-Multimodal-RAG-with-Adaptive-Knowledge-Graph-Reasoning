@@ -1,9 +1,9 @@
 # TraceRAG — Self-Correcting Multimodal RAG with Adaptive Knowledge Graph Reasoning
 
 <p align="center">
-  <a href="http://65.2.37.39:8080"><img src="https://img.shields.io/badge/🚀_Live_AWS_App-65.2.37.39:8080-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white" /></a>
-  <a href="http://65.2.37.39:8001/docs"><img src="https://img.shields.io/badge/📖_API_Documentation-Swagger_UI-005571?style=for-the-badge&logo=fastapi&logoColor=white" /></a>
-  <a href="http://65.2.37.39:8001/health"><img src="https://img.shields.io/badge/⚡_Backend_Status-Healthy-10B981?style=for-the-badge&logo=statuspage&logoColor=white" /></a>
+  <a href="http://13.203.136.117:8080"><img src="https://img.shields.io/badge/🚀_Live_AWS_App-13.203.136.117:8080-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white" /></a>
+  <a href="http://13.203.136.117:8001/docs"><img src="https://img.shields.io/badge/📖_API_Documentation-Swagger_UI-005571?style=for-the-badge&logo=fastapi&logoColor=white" /></a>
+  <a href="http://13.203.136.117:8001/health"><img src="https://img.shields.io/badge/⚡_Backend_Status-Healthy-10B981?style=for-the-badge&logo=statuspage&logoColor=white" /></a>
 </p>
 
 <p align="center">
@@ -17,9 +17,9 @@
   <img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" />
 </p>
 
-> 🌐 **Live Web Application (AWS EC2)**: [http://65.2.37.39:8080](http://65.2.37.39:8080)  
-> 🔗 **Interactive API Documentation**: [http://65.2.37.39:8001/docs](http://65.2.37.39:8001/docs)  
-> ⚡ **Backend Status & Health**: [http://65.2.37.39:8001/health](http://65.2.37.39:8001/health)  
+> 🌐 **Live Web Application (AWS EC2)**: [http://13.203.136.117:8080](http://13.203.136.117:8080)  
+> 🔗 **Interactive API Documentation**: [http://13.203.136.117:8001/docs](http://13.203.136.117:8001/docs)  
+> ⚡ **Backend Status & Health**: [http://13.203.136.117:8001/health](http://13.203.136.117:8001/health)  
 > 📦 **Demo Dataset**: Pre-loaded with canonical VoltBus Route 101 Multimodal Dataset (PDF, MP3, 3 Schematics)  
 >  
 > **TraceRAG** is a production-grade multimodal RAG framework designed to minimize hallucinations across documents, OCR schematics, and timestamped audio/video. It combines hybrid dense-lexical retrieval and multi-hop Knowledge Graph reasoning with an autonomous reflection critic that detects ungrounded claims, triggers re-retrieval, and provides verifiable, interactive citations.
