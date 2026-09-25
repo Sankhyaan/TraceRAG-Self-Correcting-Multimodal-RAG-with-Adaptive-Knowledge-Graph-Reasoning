@@ -243,6 +243,7 @@ def generate_conversational_response(
     context_msg = f"{history_str}User message: \"{query}\"\n\nPlease provide your helpful, accurate, and structured answer:"
 
     if settings.gemini_api_key:
+        # 1. Try modern google.genai Client
         try:
             from google import genai
             from google.genai import types
@@ -250,8 +251,9 @@ def generate_conversational_response(
             client = genai.Client(api_key=settings.gemini_api_key)
             resp = client.models.generate_content(
                 model=settings.gemini_model or "gemini-2.5-flash",
-                contents=f"{GENERAL_ASSISTANT_SYSTEM_PROMPT}\n\n{context_msg}",
+                contents=context_msg,
                 config=types.GenerateContentConfig(
+                    system_instruction=GENERAL_ASSISTANT_SYSTEM_PROMPT,
                     temperature=0.3,
                     max_output_tokens=2500,
                 ),
@@ -259,6 +261,45 @@ def generate_conversational_response(
             if resp.text and resp.text.strip():
                 return resp.text.strip()
         except Exception as e:
-            logger.warning(f"Gemini general knowledge generation failed: {e}")
+            logger.warning(f"google.genai general knowledge generation notice: {e}")
 
-    return "Hello! I am Trace, your multimodal AI assistant. How can I help you today?"
+        # 2. Fallback candidate loop
+        candidate_models = [
+            settings.gemini_model or "gemini-2.5-flash",
+            "gemini-2.5-flash",
+            "gemini-2.0-flash",
+            "gemini-1.5-flash",
+        ]
+        for m_name in candidate_models:
+            try:
+                import google.generativeai as legacy_genai
+                legacy_genai.configure(api_key=settings.gemini_api_key)
+                model = legacy_genai.GenerativeModel(
+                    model_name=m_name,
+                    system_instruction=GENERAL_ASSISTANT_SYSTEM_PROMPT,
+                )
+                response = model.generate_content(
+                    context_msg,
+                    generation_config={"temperature": 0.3, "max_output_tokens": 2500}
+                )
+                if response.text and response.text.strip():
+                    return response.text.strip()
+            except Exception as e:
+                logger.warning(f"Gemini generation fallback failed for model {m_name}: {str(e)}")
+                continue
+
+    if settings.anthropic_api_key:
+        try:
+            import anthropic
+            client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+            resp = client.messages.create(
+                model=settings.anthropic_model,
+                max_tokens=2500,
+                system=GENERAL_ASSISTANT_SYSTEM_PROMPT,
+                messages=[{"role": "user", "content": context_msg}],
+            )
+            return resp.content[0].text.strip()
+        except Exception as e:
+            logger.error(f"Claude general answer generation error: {e}")
+
+    return "Hello! I am Trace, your multimodal AI assistant. How can I help you explore your documents, write code, or solve problems today?"
