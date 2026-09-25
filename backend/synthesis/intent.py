@@ -105,6 +105,14 @@ Return ONLY a JSON object matching this schema:
         return default_res
 
 
+GREETING_WORDS = {
+    "hi", "hello", "hey", "hi there", "hello there", "good morning",
+    "good afternoon", "good evening", "howdy", "sup", "yo", "hey there",
+    "how are you", "how are you doing", "what's up", "whats up", "who are you",
+    "what can you do", "help", "thanks", "thank you", "bye", "goodbye"
+}
+
+
 def is_conversational_query(
     query: str,
     conversation_id: Optional[str] = None,
@@ -113,6 +121,9 @@ def is_conversational_query(
     """
     Returns True if the query is general dialogue rather than a corpus inquiry.
     """
+    clean_q = re.sub(r"[^\w\s]", "", query.strip().lower()).strip()
+    if clean_q in GREETING_WORDS or re.match(r"^(hi|hello|hey|greetings|how are you|who are you|good (morning|afternoon|evening))\b", clean_q):
+        return True
     res = classify_intent_with_llm(query, conversation_id, conversation_history)
     return res.get("is_conversational", False) or res.get("intent_type") == "CASUAL_CONVERSATION"
 
@@ -135,11 +146,8 @@ def generate_conversational_response(
     Generates a natural, friendly conversational response for chit-chat, greetings, and general dialogue.
     """
     settings = get_settings()
-    clean_q = query.strip().lower()
-    is_simple_greeting = clean_q in [
-        "hi", "hello", "hey", "hi there", "hello there", "good morning",
-        "good afternoon", "good evening", "howdy", "sup", "yo", "hey there"
-    ]
+    clean_q = re.sub(r"[^\w\s]", "", query.strip().lower()).strip()
+    is_simple_greeting = clean_q in GREETING_WORDS or bool(re.match(r"^(hi|hello|hey|greetings|good (morning|afternoon|evening))\b", clean_q))
 
     if is_simple_greeting and (not conversation_history or len(conversation_history) <= 1):
         return "Hello! How can I help you today? Feel free to ask any questions about your documents, search across your data, or let me know what you'd like to explore."
