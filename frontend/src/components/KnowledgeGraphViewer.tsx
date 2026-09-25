@@ -39,8 +39,8 @@ export const KnowledgeGraphViewer: React.FC<KnowledgeGraphViewerProps> = ({ conv
       const fileData = await listFiles(conversationId).catch(() => null)
       const files = fileData?.files || []
 
-      // If NO files exist in this session at all, immediately clear and show empty state
-      if (files.length === 0) {
+      // If NO files exist in personal session, clear and show empty state
+      if (files.length === 0 && conversationId !== 'conv_demo') {
         setGraphData({
           conversation_id: conversationId,
           node_count: 0,
@@ -58,8 +58,6 @@ export const KnowledgeGraphViewer: React.FC<KnowledgeGraphViewerProps> = ({ conv
       )
 
       if (active.length > 0) {
-
-
         setProcessingFiles(active.map((f) => f.filename))
         setIsGraphUpdating(true)
       } else {
@@ -73,7 +71,12 @@ export const KnowledgeGraphViewer: React.FC<KnowledgeGraphViewerProps> = ({ conv
       return active.length > 0
 
     } catch (err: any) {
-      if (!silent) setError(err.message || 'Failed to load knowledge graph.')
+      if (conversationId === 'conv_demo') {
+        setGraphData(CANONICAL_DEMO_GRAPH)
+        setError(null)
+      } else {
+        if (!silent) setError(err.message || 'Failed to load knowledge graph.')
+      }
       setIsGraphUpdating(false)
       return false
     } finally {

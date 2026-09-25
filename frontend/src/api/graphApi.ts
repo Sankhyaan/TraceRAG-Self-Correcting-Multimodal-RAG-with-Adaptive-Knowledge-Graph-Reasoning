@@ -55,13 +55,24 @@ export interface MultiHopResponse {
   graph_context_text: string
 }
 
+import { CANONICAL_DEMO_GRAPH } from './demoGraphData'
+
 export async function getGraphData(conversationId: string): Promise<GraphDataResponse> {
-  const res = await apiFetch(`${API_BASE}/graph/${conversationId}`)
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}))
-    throw new Error(errorData.detail || `Failed to fetch graph: ${res.status}`)
+  try {
+    const res = await apiFetch(`${API_BASE}/graph/${conversationId}`)
+    if (res.ok) {
+      return await res.json()
+    }
+  } catch (err) {
+    console.warn(`[getGraphData] Backend fetch notice for ${conversationId}:`, err)
   }
-  return res.json()
+
+  // Graceful fallback for canonical demo
+  if (conversationId === 'conv_demo' || !conversationId) {
+    return CANONICAL_DEMO_GRAPH
+  }
+
+  throw new Error('Failed to fetch graph data from backend.')
 }
 
 export async function traverseGraph(
