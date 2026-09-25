@@ -177,12 +177,30 @@ async def query_and_synthesize_stream(req: QueryRequest):
 @router.post("/debug/llm")
 async def debug_llm_endpoint(req: QueryRequest):
     """Direct testing endpoint to diagnose raw LLM output and API response."""
-    from backend.synthesis.llm_client import call_llm
-    ans = call_llm(
-        prompt=req.query,
-        system_prompt="You are a helpful expert assistant. Answer clearly.",
-        temperature=0.3,
-        max_tokens=1000,
-    )
-    return {"query": req.query, "llm_response": ans}
+    import os
+    import httpx
+    from backend.config import get_settings
+    settings = get_settings()
+
+    raw_key = settings.gemini_api_key or os.getenv("GEMINI_API_KEY", "")
+    api_key = raw_key.strip().strip('"\'')
+
+    masked_key = f"{api_key[:6]}...{api_key[-4:]}" if len(api_key) > 10 else f"len={len(api_key)}"
+
+    rest_results = {}
+    for model in ["gemini-2.0-flash", "gemini-1.5-flash"]:
+        for ver in ["v1beta", "v1"]:
+            url = f"https://generativelanguage.googleapis.com/{ver}/models/{model}:generateContent?key={api_key}"
+            try:
+                resp = httpx.post(url, json={"contents": [{"parts": [{"text": "say hello"}]}]}, timeout=10.0)
+                rest_results[f"{model}_{ver}"] = {"status": resp.status_code, "body": resp.text[:300]}
+            except Exception as e:
+                rest_results[f"{model}_{ver}"] = {"error": str(e)}
+
+    return {
+        "key_present": bool(api_key),
+        "masked_key": masked_key,
+        "settings_model": settings.gemini_model,
+        "rest_results": rest_results,
+    }
 
