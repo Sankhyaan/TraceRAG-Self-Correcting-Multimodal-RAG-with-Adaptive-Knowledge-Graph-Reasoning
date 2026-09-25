@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { getGraphData, traverseGraph, rebuildGraph, GraphDataResponse, GraphNode, MultiHopResponse } from '../api/graphApi'
+import { CANONICAL_DEMO_GRAPH } from '../api/demoGraphData'
 import { listFiles } from '../api/filesApi'
 import { InteractiveGraphCanvas, getNodeStyle, isMatchingNode } from './InteractiveGraphCanvas'
 import { renderFormattedSnippet } from '../utils/textFormatter'

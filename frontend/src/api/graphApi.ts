@@ -8,6 +8,7 @@ export interface GraphNode {
   type: string
   file_ids: string[]
   degree: number
+  metadata?: any
 }
 
 export interface GraphEdge {
@@ -22,6 +23,7 @@ export interface GraphEdge {
   timestamp?: string | null
   page_number?: number | null
   confidence: number
+  metadata?: any
 }
 
 export interface GraphDataResponse {
