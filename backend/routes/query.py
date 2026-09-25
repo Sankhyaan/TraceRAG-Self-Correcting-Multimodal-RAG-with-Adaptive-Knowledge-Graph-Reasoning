@@ -188,7 +188,20 @@ async def debug_llm_endpoint(req: QueryRequest):
     masked_key = f"{api_key[:6]}...{api_key[-4:]}" if len(api_key) > 10 else f"len={len(api_key)}"
 
     rest_results = {}
-    for model in ["gemini-2.0-flash", "gemini-1.5-flash"]:
+    # 1. Query ListModels to find exactly what models exist for this key
+    try:
+        list_url = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
+        resp_list = httpx.get(list_url, timeout=10.0)
+        rest_results["ListModels_v1beta"] = {
+            "status": resp_list.status_code,
+            "models": [m.get("name") for m in resp_list.json().get("models", [])] if resp_list.status_code == 200 else resp_list.text[:300]
+        }
+    except Exception as e:
+        rest_results["ListModels_v1beta"] = {"error": str(e)}
+
+    # 2. Test generation on recommended models
+    test_models = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-flash-latest", "gemini-pro"]
+    for model in test_models:
         for ver in ["v1beta", "v1"]:
             url = f"https://generativelanguage.googleapis.com/{ver}/models/{model}:generateContent?key={api_key}"
             try:
