@@ -172,3 +172,17 @@ async def query_and_synthesize_stream(req: QueryRequest):
                 pass
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+
+@router.post("/debug/llm")
+async def debug_llm_endpoint(req: QueryRequest):
+    """Direct testing endpoint to diagnose raw LLM output and API response."""
+    from backend.synthesis.llm_client import call_llm
+    ans = call_llm(
+        prompt=req.query,
+        system_prompt="You are a helpful expert assistant. Answer clearly.",
+        temperature=0.3,
+        max_tokens=1000,
+    )
+    return {"query": req.query, "llm_response": ans}
+

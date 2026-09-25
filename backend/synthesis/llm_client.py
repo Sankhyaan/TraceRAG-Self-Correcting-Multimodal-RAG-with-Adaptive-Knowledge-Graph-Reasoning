@@ -1,3 +1,4 @@
+import os
 import re
 import json
 import logging
@@ -21,54 +22,66 @@ def call_llm(
     """
     settings = get_settings()
 
+    # Clean & sanitize Gemini API Key (strip whitespace, surrounding quotes)
+    raw_key = settings.gemini_api_key or os.getenv("GEMINI_API_KEY", "")
+    api_key = raw_key.strip().strip('"\'')
+
     # 1. Google Gemini
-    if settings.gemini_api_key:
+    if api_key:
         full_prompt = f"{system_prompt.strip()}\n\n{prompt.strip()}" if system_prompt else prompt.strip()
+        raw_model = (settings.gemini_model or "gemini-2.0-flash").strip().strip('"\'')
+        if "2.5" in raw_model:
+            raw_model = "gemini-2.0-flash"
+
         candidate_models = [
-            settings.gemini_model or "gemini-2.0-flash",
+            raw_model,
             "gemini-2.0-flash",
             "gemini-1.5-flash",
             "gemini-1.5-pro",
+            "gemini-1.5-flash-latest",
         ]
+        # Deduplicate while preserving order
+        candidate_models = list(dict.fromkeys(candidate_models))
 
         # 1A. Direct High-Throughput REST API (Bulletproof, zero SDK version mismatches)
         for model_name in candidate_models:
-            try:
-                import httpx
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={settings.gemini_api_key}"
-                body: Dict[str, Any] = {
-                    "contents": [{
-                        "parts": [{"text": full_prompt}]
-                    }],
-                    "generationConfig": {
-                        "temperature": temperature,
-                        "maxOutputTokens": max_tokens,
+            for api_version in ["v1beta", "v1"]:
+                try:
+                    import httpx
+                    url = f"https://generativelanguage.googleapis.com/{api_version}/models/{model_name}:generateContent?key={api_key}"
+                    body: Dict[str, Any] = {
+                        "contents": [{
+                            "parts": [{"text": full_prompt}]
+                        }],
+                        "generationConfig": {
+                            "temperature": temperature,
+                            "maxOutputTokens": max_tokens,
+                        }
                     }
-                }
-                if json_mode:
-                    body["generationConfig"]["responseMimeType"] = "application/json"
+                    if json_mode:
+                        body["generationConfig"]["responseMimeType"] = "application/json"
 
-                with httpx.Client(timeout=30.0) as client:
-                    resp = client.post(url, json=body)
-                    if resp.status_code == 200:
-                        data = resp.json()
-                        candidates = data.get("candidates", [])
-                        if candidates:
-                            parts = candidates[0].get("content", {}).get("parts", [])
-                            if parts and parts[0].get("text"):
-                                text_out = parts[0]["text"].strip()
-                                if text_out:
-                                    return text_out
-                    else:
-                        logger.debug(f"Gemini REST error ({model_name}): HTTP {resp.status_code} - {resp.text[:120]}")
-            except Exception as e:
-                logger.debug(f"Gemini REST attempt exception for {model_name}: {e}")
-                continue
+                    with httpx.Client(timeout=25.0) as client:
+                        resp = client.post(url, json=body)
+                        if resp.status_code == 200:
+                            data = resp.json()
+                            candidates = data.get("candidates", [])
+                            if candidates:
+                                parts = candidates[0].get("content", {}).get("parts", [])
+                                if parts and parts[0].get("text"):
+                                    text_out = parts[0]["text"].strip()
+                                    if text_out:
+                                        return text_out
+                        else:
+                            logger.info(f"Gemini REST notice ({model_name} {api_version}): HTTP {resp.status_code} - {resp.text[:140]}")
+                except Exception as e:
+                    logger.info(f"Gemini REST exception ({model_name} {api_version}): {e}")
+                    continue
 
         # 1B. Fallback to google.genai Client
         try:
             from google import genai
-            client = genai.Client(api_key=settings.gemini_api_key)
+            client = genai.Client(api_key=api_key)
             for model_name in candidate_models:
                 try:
                     resp = client.models.generate_content(
@@ -77,31 +90,34 @@ def call_llm(
                     )
                     if resp.text and resp.text.strip():
                         return resp.text.strip()
-                except Exception:
+                except Exception as g_err:
+                    logger.info(f"google.genai notice ({model_name}): {g_err}")
                     continue
         except Exception as e:
-            logger.debug(f"google.genai fallback exception: {e}")
+            logger.info(f"google.genai client creation notice: {e}")
 
         # 1C. Fallback to legacy google.generativeai
         try:
             import google.generativeai as legacy_genai
-            legacy_genai.configure(api_key=settings.gemini_api_key)
+            legacy_genai.configure(api_key=api_key)
             for model_name in candidate_models:
                 try:
                     model = legacy_genai.GenerativeModel(model_name=model_name)
                     response = model.generate_content(full_prompt)
                     if response.text and response.text.strip():
                         return response.text.strip()
-                except Exception:
+                except Exception as leg_err:
+                    logger.info(f"legacy_genai notice ({model_name}): {leg_err}")
                     continue
         except Exception as e:
-            logger.debug(f"legacy_genai fallback exception: {e}")
+            logger.info(f"legacy_genai notice: {e}")
 
     # 2. Anthropic Claude (Alternative)
-    if settings.anthropic_api_key:
+    anthropic_key = (settings.anthropic_api_key or os.getenv("ANTHROPIC_API_KEY", "")).strip().strip('"\'')
+    if anthropic_key:
         try:
             import anthropic
-            client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+            client = anthropic.Anthropic(api_key=anthropic_key)
             kwargs: Dict[str, Any] = {
                 "model": settings.anthropic_model or "claude-3-5-sonnet-20241022",
                 "max_tokens": max_tokens,
