@@ -131,18 +131,18 @@ class SynthesisPipeline:
         # Load conversation history for contextual memory if not explicitly provided
         history = conversation_history if conversation_history is not None else message_storage.get_messages(conversation_id)
 
-        # Step 0: Conversational Intent Intercept (Greetings, small talk, general dialogue)
+        # Step 0: Conversational & General Knowledge Intent Intercept
         if is_conversational_query(query, conversation_id=conversation_id, conversation_history=history):
-            logger.info(f"Query '{query}' classified as conversational dialog.")
-            friendly_answer = generate_conversational_response(query, conversation_id, history)
+            logger.info(f"Query '{query}' classified as general knowledge / conversational dialog.")
+            general_answer = generate_conversational_response(query, conversation_id, history)
             return SynthesisResult(
                 query=query,
                 conversation_id=conversation_id,
-                answer=friendly_answer,
+                answer=general_answer,
                 confidence="high",
                 critic=CriticResult(
                     confidence="high",
-                    reason="Conversational greeting & assistant dialogue.",
+                    reason="General knowledge & AI reasoning.",
                     missing_aspects=[],
                     should_retry=False,
                 ),
@@ -155,7 +155,7 @@ class SynthesisPipeline:
                 groundedness_score=1.0,
                 chunks=[],
                 graph_hops=None,
-                routed_categories=["conversational"],
+                routed_categories=["general_knowledge"],
             )
 
         # Step 1: Multi-Turn Contextual Query Rewriting
@@ -274,15 +274,15 @@ class SynthesisPipeline:
         # Load conversation history for multi-turn context if not explicitly provided
         history = conversation_history if conversation_history is not None else message_storage.get_messages(conversation_id)
 
-        # Step 0: Conversational Intent Intercept (Pure LLM Semantic Router)
+        # Step 0: Conversational & General Knowledge Intent Intercept
         if is_conversational_query(query, conversation_id=conversation_id, conversation_history=history):
             yield {
                 "event": "route",
                 "data": {
                     "stage": "route",
-                    "categories": ["conversational"],
-                    "intent_label": "General Conversation",
-                    "explanation": "General conversation & assistant dialogue"
+                    "categories": ["general_knowledge"],
+                    "intent_label": "General Knowledge & Reasoning",
+                    "explanation": "Answering via general knowledge AI reasoning (No file retrieval required)"
                 }
             }
             yield {
@@ -290,7 +290,7 @@ class SynthesisPipeline:
                 "data": {
                     "stage": "retrieve",
                     "chunks_count": 0,
-                    "explanation": "General dialogue (No file retrieval required)"
+                    "explanation": "General AI Intelligence (0 file chunks required)"
                 }
             }
             yield {
@@ -299,7 +299,7 @@ class SynthesisPipeline:
                     "stage": "graph",
                     "hops_count": 0,
                     "graph_hops": [],
-                    "explanation": "Direct dialogue (0 graph hops)"
+                    "explanation": "Direct Reasoning (0 graph hops)"
                 }
             }
             yield {
@@ -307,26 +307,34 @@ class SynthesisPipeline:
                 "data": {
                     "stage": "confidence",
                     "confidence": "HIGH",
-                    "explanation": "General Conversational Dialogue"
+                    "explanation": "General Knowledge & AI Reasoning"
                 }
             }
-            friendly_answer = generate_conversational_response(query, conversation_id, history)
+            yield {
+                "event": "answer_start",
+                "data": {
+                    "stage": "answer",
+                    "status": "generating",
+                    "explanation": "Synthesizing answer..."
+                }
+            }
+            general_answer = generate_conversational_response(query, conversation_id, history)
             result = SynthesisResult(
                 query=query,
                 conversation_id=conversation_id,
-                answer=friendly_answer,
+                answer=general_answer,
                 confidence="high",
-                critic=CriticResult(confidence="high", reason="Conversational dialogue.", missing_aspects=[], should_retry=False),
+                critic=CriticResult(confidence="high", reason="General knowledge & AI reasoning.", missing_aspects=[], should_retry=False),
                 retry_info=RetryInfo(retried=False, original_query=query, initial_confidence="high"),
                 citations=[],
                 groundedness_score=1.0,
                 chunks=[],
                 graph_hops=None,
-                routed_categories=["conversational"],
+                routed_categories=["general_knowledge"],
             )
             yield {
                 "event": "answer",
-                "data": {"stage": "answer", "answer": friendly_answer}
+                "data": {"stage": "answer", "answer": general_answer}
             }
             yield {
                 "event": "done",

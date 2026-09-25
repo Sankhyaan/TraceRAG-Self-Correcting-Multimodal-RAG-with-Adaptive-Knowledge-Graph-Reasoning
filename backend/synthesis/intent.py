@@ -7,6 +7,21 @@ from backend.storage import storage_service
 
 logger = logging.getLogger("trace.synthesis.intent")
 
+GREETING_PATTERNS = [
+    r"^(hi|hello|hey|greetings|howdy|sup|yo|hi\s+there|hello\s+there)\b",
+    r"^(good\s+(morning|afternoon|evening|day|night))\b",
+    r"^(how\s+are\s+you|how\s+are\s+you\s+doing|how's\s+it\s+going|hows\s+it\s+going|what's\s+up|whats\s+up)\b",
+    r"^(who\s+are\s+you|what\s+is\s+your\s+name|what\s+can\s+you\s+do|introduce\s+yourself|help\s+me)\b",
+    r"^(thanks|thank\s+you|thank\s+you\s+very\s+much|thanks\s+a\s+lot|bye|goodbye|see\s+you)\b",
+]
+
+FILE_EXPLICIT_TRIGGERS = [
+    r"\b(pdf|docx?|txt|markdown|document|documents|file|files|upload|uploaded|schematic|diagram|blueprint)\b",
+    r"\b(video|audio|recording|transcript|presentation|keyframe|slide|slides|page\s+\d+|table\s+\d+)\b",
+    r"\b(in\s+the\s+file|in\s+the\s+document|in\s+the\s+pdf|from\s+the\s+data|according\s+to\s+the|based\s+on\s+the\s+file)\b",
+    r"\b(voltbus|stop\s+7|elena\s+rostova|marcus\s+vance|route\s+101|depot-gamma|mmig|vuts|phase\s+ii|level\s+1\s+thermal)\b",
+]
+
 
 def classify_intent_with_llm(
     query: str,
@@ -14,13 +29,17 @@ def classify_intent_with_llm(
     conversation_history: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
     """
-    Pure LLM Semantic Intent Classifier & Modality Router.
-    Evaluates query semantics, ongoing dialogue history, and active session files
-    without brittle hardcoded regex rules.
+    High-Precision Semantic Intent Classifier & Scope Router.
+    Accurately differentiates between:
+    1. GENERAL_KNOWLEDGE / CASUAL_CONVERSATION: World facts, science, coding, math, explanations, greetings, definitions.
+    2. CORPUS_QUERY: Specific inquiries targeting uploaded private session files, documents, schematics, or specific project details.
     """
     settings = get_settings()
+    clean_q = query.strip()
+    q_low = clean_q.lower()
 
     # 1. Fetch available files in this session to provide corpus grounding
+    session_filenames = []
     file_context_lines = []
     if conversation_id:
         try:
@@ -28,12 +47,30 @@ def classify_intent_with_llm(
             for f in files:
                 fname = f.get("filename", "")
                 ftype = f.get("file_type", "document")
-                snippet = (f.get("extracted_text") or "")[:120].replace("\n", " ").strip()
-                file_context_lines.append(f"- '{fname}' ({ftype}): {snippet}...")
+                if fname:
+                    session_filenames.append(fname)
+                    snippet = (f.get("extracted_text") or "")[:120].replace("\n", " ").strip()
+                    file_context_lines.append(f"- '{fname}' ({ftype}): {snippet}...")
         except Exception as e:
             logger.debug(f"File context note: {e}")
 
     file_context_str = "\n".join(file_context_lines) if file_context_lines else "No files uploaded in this session."
+
+    # Fast heuristic pre-checks
+    has_file_trigger = any(re.search(pat, q_low) for pat in FILE_EXPLICIT_TRIGGERS)
+    has_filename_mention = any(fn.lower() in q_low for fn in session_filenames if len(fn) > 3)
+    is_greeting = any(re.search(pat, q_low) for pat in GREETING_PATTERNS)
+
+    if is_greeting and not has_file_trigger:
+        return {
+            "intent_type": "CASUAL_CONVERSATION",
+            "is_conversational": True,
+            "target_modality": None,
+            "target_modalities": [],
+            "target_filename": None,
+            "intent_label": "General Conversation",
+            "reasoning": "Standard greeting or small talk.",
+        }
 
     history_str = ""
     if conversation_history:
@@ -43,42 +80,55 @@ def classify_intent_with_llm(
             for m in recent
         ) + "\n\n"
 
-    # Default fallback object
-    default_res = {
-        "intent_type": "CORPUS_QUERY",
-        "is_conversational": False,
-        "target_modality": "document",
-        "target_filename": None,
-        "intent_label": "Document (PDF/Docx)",
-        "reasoning": "Standard document search",
-    }
-
     if not settings.gemini_api_key:
-        return default_res
+        if has_file_trigger or has_filename_mention:
+            return {
+                "intent_type": "CORPUS_QUERY",
+                "is_conversational": False,
+                "target_modality": "document",
+                "target_filename": session_filenames[0] if session_filenames else None,
+                "intent_label": "Document (PDF/Docx)",
+                "reasoning": "Heuristic match for document keywords.",
+            }
+        return {
+            "intent_type": "GENERAL_KNOWLEDGE",
+            "is_conversational": True,
+            "target_modality": None,
+            "target_modalities": [],
+            "target_filename": None,
+            "intent_label": "General Knowledge & Reasoning",
+            "reasoning": "General knowledge inquiry.",
+        }
 
-    prompt = f"""You are the Semantic Intent Classifier for TraceRAG.
-Determine if the user's message is CASUAL_CONVERSATION (general chatting, greetings, jokes, philosophical or coding questions) OR CORPUS_QUERY (asking about uploaded session files, courses, videos, audio, resumes, project budgets, transfers, diagrams, or documents).
+    prompt = f"""You are the Semantic Intent Classifier for Trace, an intelligent Multimodal AI Assistant.
 
-IMPORTANT MULTI-MODAL ROUTING RULES:
-1. If the user's question spans or requires information from multiple modalities/files (e.g. asking for project budget, leadership, transfer locations, effective dates which span PDF documents, audio updates, and diagrams), classify it as MULTI-MODAL!
-2. For multi-modal queries, set "target_modality": "multimodal", "target_modalities": ["document", "audio", "image", "video"], "intent_label": "Multi-Modal", and "target_filename": null.
-3. If the query clearly targets a single specific modality or file (e.g. "summarize the video" or "what does page 3 of the PDF say"), specify that exact modality and filename.
+TASK:
+Determine whether the user's inquiry is:
+1. "GENERAL_KNOWLEDGE" / "CASUAL_CONVERSATION":
+   - Greetings, casual talk, jokes, identity questions ("hi", "how are you", "who are you").
+   - General world knowledge, facts, history, science, geography ("what is photosynthesis?", "what is the speed of light?", "who was Isaac Newton?").
+   - General engineering, physics, hardware concepts not specific to uploaded files ("how do electric motors work in general?", "what is an inverter?", "explain AC vs DC", "how do batteries store energy?").
+   - Coding, programming, algorithms, debugging, math ("write a python function to sort an array", "how does binary search work?", "what is Docker?").
+   - Broad explanations, brainstorming, tutorials, advice, or translations.
+2. "CORPUS_QUERY":
+   - Explicitly asks about uploaded documents, PDFs, schematics, transcripts, or session files ("what does page 3 say?", "in the uploaded pdf", "summarize the video presentation", "in the schematic diagram").
+   - Inquires about specific private project entities, incident reports, or names found in the session files (e.g. "VoltBus", "Stop 7 incident", "Elena Rostova", "Marcus Vance", "Route 101", "Depot-Gamma", "MMIG").
 
-Session Files:
+Session Files Present:
 {file_context_str}
 
 {history_str}User Message:
-\"{query}\"
+\"{clean_q}\"
 
 Return ONLY a JSON object matching this schema:
 {{
-  "intent_type": "CASUAL_CONVERSATION" | "CORPUS_QUERY",
+  "intent_type": "GENERAL_KNOWLEDGE" | "CASUAL_CONVERSATION" | "CORPUS_QUERY",
   "is_conversational": true | false,
   "target_modality": "multimodal" | "video" | "document" | "audio" | "image" | null,
   "target_modalities": ["document", "audio", "image", "video"],
   "target_filename": "exact matching filename from session files if single-file" | null,
-  "intent_label": "Multi-Modal" | "General Conversation" | "Video Presentation (Filename)" | "Document (Filename)" | "Audio Transcript (Filename)" | "Image / Diagram (Filename)",
-  "reasoning": "Brief explanation."
+  "intent_label": "General Knowledge & Reasoning" | "General Conversation" | "Multi-Modal" | "Document (Filename)" | "Video Presentation (Filename)" | "Audio Transcript (Filename)" | "Image / Diagram (Filename)",
+  "reasoning": "Short 1-sentence reason for classification."
 }}"""
 
     try:
@@ -99,18 +149,34 @@ Return ONLY a JSON object matching this schema:
             raw = re.sub(r"^```(?:json)?\s*", "", raw)
             raw = re.sub(r"\s*```$", "", raw)
         data = json.loads(raw)
+
+        intent_type = data.get("intent_type", "GENERAL_KNOWLEDGE")
+        if intent_type in ("GENERAL_KNOWLEDGE", "CASUAL_CONVERSATION"):
+            data["is_conversational"] = True
+        elif intent_type == "CORPUS_QUERY":
+            data["is_conversational"] = False
+
         return data
     except Exception as e:
         logger.warning(f"Pure LLM semantic intent classification failed: {e}")
-        return default_res
-
-
-GREETING_WORDS = {
-    "hi", "hello", "hey", "hi there", "hello there", "good morning",
-    "good afternoon", "good evening", "howdy", "sup", "yo", "hey there",
-    "how are you", "how are you doing", "what's up", "whats up", "who are you",
-    "what can you do", "help", "thanks", "thank you", "bye", "goodbye"
-}
+        if has_file_trigger or has_filename_mention:
+            return {
+                "intent_type": "CORPUS_QUERY",
+                "is_conversational": False,
+                "target_modality": "document",
+                "target_filename": session_filenames[0] if session_filenames else None,
+                "intent_label": "Document (PDF/Docx)",
+                "reasoning": "Fallback corpus query.",
+            }
+        return {
+            "intent_type": "GENERAL_KNOWLEDGE",
+            "is_conversational": True,
+            "target_modality": None,
+            "target_modalities": [],
+            "target_filename": None,
+            "intent_label": "General Knowledge & Reasoning",
+            "reasoning": "Fallback general knowledge inquiry.",
+        }
 
 
 def is_conversational_query(
@@ -119,21 +185,31 @@ def is_conversational_query(
     conversation_history: Optional[List[Dict[str, Any]]] = None,
 ) -> bool:
     """
-    Returns True if the query is general dialogue rather than a corpus inquiry.
+    Returns True if the query is general dialogue, world knowledge, coding, or concept explanation
+    rather than a specific query targeting the uploaded session files.
     """
-    clean_q = re.sub(r"[^\w\s]", "", query.strip().lower()).strip()
-    if clean_q in GREETING_WORDS or re.match(r"^(hi|hello|hey|greetings|how are you|who are you|good (morning|afternoon|evening))\b", clean_q):
+    clean_q = query.strip()
+    q_low = clean_q.lower()
+
+    # Fast sub-millisecond greeting check
+    if any(re.search(pat, q_low) for pat in GREETING_PATTERNS) and len(clean_q.split()) <= 6:
         return True
+
     res = classify_intent_with_llm(query, conversation_id, conversation_history)
-    return res.get("is_conversational", False) or res.get("intent_type") == "CASUAL_CONVERSATION"
+    return res.get("is_conversational", False) or res.get("intent_type") in ("CASUAL_CONVERSATION", "GENERAL_KNOWLEDGE")
 
 
-CONVERSATIONAL_SYSTEM_PROMPT = """You are Trace, a friendly, intelligent, and natural conversational AI assistant.
+GENERAL_ASSISTANT_SYSTEM_PROMPT = """You are Trace, an advanced, highly intelligent AI assistant with deep reasoning, coding, and scientific abilities comparable to ChatGPT, Gemini, and Claude.
 
-Guidelines:
-1. For simple greetings (like "hi", "hello", "hey", "how are you"), provide a clean, natural, friendly, and concise greeting response (e.g., "Hello! How can I help you today?"). Never summarize previous discussion topics, never recite filenames, and never give long canned intros unless explicitly requested.
-2. For general questions or casual chat, answer naturally and concisely like a thoughtful human colleague.
-3. Only discuss specific documents, files, or technical domain topics if the user explicitly asks about them.
+CORE PRINCIPLES:
+1. For General Knowledge, Coding, Math, Science, and Conceptual Questions:
+   - Provide a comprehensive, accurate, articulate, and well-structured answer.
+   - Use clean Markdown with clear headings, bullet points, and syntax-highlighted code blocks where appropriate.
+   - Do NOT say "Based on the provided documents" when answering general world knowledge, coding, or conceptual questions.
+2. For Greetings & Small Talk:
+   - Be warm, friendly, natural, and concise (e.g., "Hello! How can I help you today? Feel free to ask general questions or explore your uploaded files.").
+3. For Conversational Follow-ups:
+   - Maintain full multi-turn conversational memory and natural dialogue continuity.
 """
 
 
@@ -143,24 +219,28 @@ def generate_conversational_response(
     conversation_history: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     """
-    Generates a natural, friendly conversational response for chit-chat, greetings, and general dialogue.
+    Generates rich, comprehensive expert answers for general world knowledge, coding,
+    science, math, and friendly chit-chat.
     """
     settings = get_settings()
-    clean_q = re.sub(r"[^\w\s]", "", query.strip().lower()).strip()
-    is_simple_greeting = clean_q in GREETING_WORDS or bool(re.match(r"^(hi|hello|hey|greetings|good (morning|afternoon|evening))\b", clean_q))
+    clean_q = query.strip()
+    q_low = clean_q.lower()
+
+    # Fast greeting check
+    is_simple_greeting = any(re.search(pat, q_low) for pat in GREETING_PATTERNS) and len(clean_q.split()) <= 6
 
     if is_simple_greeting and (not conversation_history or len(conversation_history) <= 1):
-        return "Hello! How can I help you today? Feel free to ask any questions about your documents, search across your data, or let me know what you'd like to explore."
+        return "Hello! How can I help you today? Feel free to ask any questions about your documents, general science, coding, or explore your data."
 
     history_str = ""
     if conversation_history and not is_simple_greeting:
-        recent = conversation_history[-4:]
+        recent = conversation_history[-6:]
         history_str = "Conversation History:\n" + "\n".join(
             f"{'User' if m.get('role') == 'user' else 'Trace'}: {m.get('content', '')}"
             for m in recent
         ) + "\n\n"
 
-    context_msg = f"{history_str}User message: \"{query}\"\n"
+    context_msg = f"{history_str}User message: \"{query}\"\n\nPlease provide your helpful, accurate, and structured answer:"
 
     if settings.gemini_api_key:
         try:
@@ -169,16 +249,16 @@ def generate_conversational_response(
 
             client = genai.Client(api_key=settings.gemini_api_key)
             resp = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=f"{CONVERSATIONAL_SYSTEM_PROMPT}\n\n{context_msg}",
+                model=settings.gemini_model or "gemini-2.5-flash",
+                contents=f"{GENERAL_ASSISTANT_SYSTEM_PROMPT}\n\n{context_msg}",
                 config=types.GenerateContentConfig(
-                    temperature=0.7,
-                    max_output_tokens=300,
+                    temperature=0.3,
+                    max_output_tokens=2500,
                 ),
             )
             if resp.text and resp.text.strip():
                 return resp.text.strip()
         except Exception as e:
-            logger.warning(f"Gemini conversational generation failed: {e}")
+            logger.warning(f"Gemini general knowledge generation failed: {e}")
 
-    return "Hello! How can I help you today? Feel free to ask any questions or explore your documents."
+    return "Hello! I am Trace, your multimodal AI assistant. How can I help you today?"
