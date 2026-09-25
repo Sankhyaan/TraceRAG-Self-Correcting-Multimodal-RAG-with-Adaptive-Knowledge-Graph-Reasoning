@@ -89,9 +89,9 @@ JSON Array:"""
 
             client = genai.Client(api_key=self.settings.gemini_api_key)
             models_to_try = [
-                self.settings.gemini_model or "gemini-2.0-flash",
-                "gemini-2.0-flash",
-                "gemini-1.5-flash",
+                "gemini-3.5-flash",
+                "gemini-3.7-flash",
+                "gemini-3.6-flash",
             ]
             raw = "[]"
             for m in models_to_try:

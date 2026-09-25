@@ -29,19 +29,17 @@ def call_llm(
     # 1. Google Gemini
     if api_key:
         full_prompt = f"{system_prompt.strip()}\n\n{prompt.strip()}" if system_prompt else prompt.strip()
-        raw_model = (settings.gemini_model or "gemini-2.0-flash").strip().strip('"\'')
-        if "2.5" in raw_model:
-            raw_model = "gemini-2.0-flash"
-
         candidate_models = [
-            raw_model,
-            "gemini-2.0-flash",
-            "gemini-1.5-flash",
-            "gemini-1.5-pro",
-            "gemini-1.5-flash-latest",
+            "gemini-3.5-flash",
+            "gemini-3.7-flash",
+            "gemini-3.6-flash",
+            "gemini-3-flash-preview",
+            "gemini-3.1-flash-lite",
+            "gemini-3.8-flash",
+            "gemini-flash-latest",
         ]
-        # Deduplicate while preserving order
-        candidate_models = list(dict.fromkeys(candidate_models))
+        if settings.gemini_model and settings.gemini_model not in candidate_models and "2.5" not in settings.gemini_model and "2.0" not in settings.gemini_model:
+            candidate_models.insert(0, settings.gemini_model.strip().strip('"\''))
 
         # 1A. Direct High-Throughput REST API (Bulletproof, zero SDK version mismatches)
         for model_name in candidate_models:

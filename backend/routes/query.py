@@ -199,13 +199,20 @@ async def debug_llm_endpoint(req: QueryRequest):
     except Exception as e:
         rest_results["ListModels_v1beta"] = {"error": str(e)}
 
-    # 2. Test generation on recommended models
-    test_models = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-flash-latest", "gemini-pro"]
+    # 2. Test generation on 3.x models
+    test_models = [
+        "gemini-3.5-flash",
+        "gemini-3.7-flash",
+        "gemini-3.6-flash",
+        "gemini-3-flash-preview",
+        "gemini-3.1-flash-lite",
+        "gemini-3.8-flash",
+    ]
     for model in test_models:
-        for ver in ["v1beta", "v1"]:
+        for ver in ["v1beta"]:
             url = f"https://generativelanguage.googleapis.com/{ver}/models/{model}:generateContent?key={api_key}"
             try:
-                resp = httpx.post(url, json={"contents": [{"parts": [{"text": "say hello"}]}]}, timeout=10.0)
+                resp = httpx.post(url, json={"contents": [{"parts": [{"text": "Say: Trace RAG online."}]}]}, timeout=10.0)
                 rest_results[f"{model}_{ver}"] = {"status": resp.status_code, "body": resp.text[:300]}
             except Exception as e:
                 rest_results[f"{model}_{ver}"] = {"error": str(e)}
