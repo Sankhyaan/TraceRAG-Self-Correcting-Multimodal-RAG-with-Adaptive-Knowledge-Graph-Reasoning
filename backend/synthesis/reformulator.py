@@ -81,7 +81,7 @@ class QueryReformulator:
                     missing_aspects=", ".join(critic_result.missing_aspects) or "Core technical details",
                 )
                 resp = client.models.generate_content(
-                    model=self.settings.gemini_model or "gemini-3.6-flash",
+                    model=self.settings.gemini_model or "gemini-2.5-flash",
                     contents=prompt
                 )
                 raw = resp.text.strip()

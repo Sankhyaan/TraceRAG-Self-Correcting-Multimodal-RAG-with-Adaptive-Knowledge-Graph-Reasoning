@@ -87,7 +87,7 @@ Return ONLY a JSON object matching this schema:
 
         client = genai.Client(api_key=settings.gemini_api_key)
         resp = client.models.generate_content(
-            model="gemini-3.5-flash-lite",
+            model=settings.gemini_model or "gemini-2.5-flash",
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",

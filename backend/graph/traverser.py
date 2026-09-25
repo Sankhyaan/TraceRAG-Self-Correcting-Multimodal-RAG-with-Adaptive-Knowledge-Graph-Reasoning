@@ -89,7 +89,7 @@ JSON Array:"""
 
             client = genai.Client(api_key=self.settings.gemini_api_key)
             resp = client.models.generate_content(
-                model=self.settings.gemini_model or "gemini-3.5-flash-lite",
+                model=self.settings.gemini_model or "gemini-2.5-flash",
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",

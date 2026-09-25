@@ -274,7 +274,7 @@ Return ONLY a JSON mapping from each original mention to its canonical standardi
 
             client = genai.Client(api_key=self.settings.gemini_api_key)
             resp = client.models.generate_content(
-                model=self.settings.gemini_model or "gemini-3.6-flash",
+                model=self.settings.gemini_model or "gemini-2.5-flash",
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",

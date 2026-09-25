@@ -94,7 +94,7 @@ class AnswerGenerator:
                 from google.genai import types
                 client = genai.Client(api_key=self.settings.gemini_api_key)
                 resp = client.models.generate_content(
-                    model=self.settings.gemini_model or "gemini-3.5-flash-lite",
+                    model=self.settings.gemini_model or "gemini-2.5-flash",
                     contents=prompt,
                     config=types.GenerateContentConfig(
                         system_instruction=SYNTHESIS_SYSTEM_PROMPT,
@@ -109,10 +109,10 @@ class AnswerGenerator:
 
             # 2. Fallback candidate loop
             candidate_models = [
-                self.settings.gemini_model or "gemini-3.5-flash-lite",
-                "gemini-3.5-flash-lite",
-                "gemini-3.1-flash-lite",
-                "gemini-flash-lite-latest",
+                self.settings.gemini_model or "gemini-2.5-flash",
+                "gemini-2.5-flash",
+                "gemini-2.0-flash",
+                "gemini-1.5-flash",
             ]
             for m_name in candidate_models:
                 try:

@@ -72,7 +72,7 @@ class QueryContextualizer:
                 user_prompt = f"Conversation History:\n{history_str}\n\nLatest User Follow-up:\n\"{clean_query}\"\n\nStandalone Search Query:"
 
                 resp = client.models.generate_content(
-                    model=self.settings.gemini_model or "gemini-3.5-flash-lite",
+                    model=self.settings.gemini_model or "gemini-2.5-flash",
                     contents=user_prompt,
                     config={"system_instruction": CONTEXTUALIZE_SYSTEM_PROMPT, "temperature": 0.0, "max_output_tokens": 100}
                 )

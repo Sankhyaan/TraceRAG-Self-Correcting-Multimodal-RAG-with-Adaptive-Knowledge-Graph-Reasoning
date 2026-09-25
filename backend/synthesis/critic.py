@@ -74,7 +74,7 @@ class RetrievalCritic:
                 prompt = CRITIC_PROMPT.format(query=query, passages=passages_str)
 
                 resp = client.models.generate_content(
-                    model=self.settings.gemini_model or "gemini-3.6-flash",
+                    model=self.settings.gemini_model or "gemini-2.5-flash",
                     contents=prompt
                 )
                 raw = resp.text.strip()
